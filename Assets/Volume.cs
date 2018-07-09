@@ -35,6 +35,10 @@ public class Volume {
     public float rCytoplasmic = 0.27f / Globals.timeConst;
 
 
+    public float ruptureVolume;
+    public float relativeRuptureVolume  = 0;
+
+
 
 
     public Volume() {

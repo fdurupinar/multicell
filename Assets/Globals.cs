@@ -14,7 +14,8 @@ public static class Globals {
     public static string S = "S";  //synthesis
     public static string M = "M";  //mitosis
     public static string A = "A";  //apoptosis
-    public static string N = "N";  //necrosis
+    public static string NL = "NL";  //necrosis lysed
+    public static string NS = "NS";  //necrosis swelling
     public static string D = "D";  //dead
 
 }

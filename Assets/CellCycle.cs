@@ -9,13 +9,15 @@ using UnityEngine;
 public struct PhaseT {
     public int ind;
     public string name;
+    public Color color;
     public int nextPhaseInd;
 
 
-    public PhaseT(int ind, string name, int nextPhaseInd) {
+    public PhaseT(int ind, string name, int nextPhaseInd, Color color) {
         this.ind = ind;
         this.name = name;
         this.nextPhaseInd = nextPhaseInd;
+        this.color = color;
 
     }
 };
@@ -96,18 +98,28 @@ public class CellCycle {
     public int ExitPhase(int phaseInd) {
 
         PhaseT phase = GetPhaseByInd(phaseInd);
-        PhaseT nextPhase;
-        
+        int nextPhaseInd = 0;
+
         if (phase.name.Equals(Globals.A)) {
-            nextPhase = GetPhaseByName(Globals.D);
+            nextPhaseInd = GetPhaseByName(Globals.D).ind;
+        }
+        else if (phase.name.Equals(Globals.NS)) {
+            //remain in non-lysed state if volume has not exceeded the rapture volume
+            if (phenotype.volume.total >  phenotype.volume.ruptureVolume) { 
+                nextPhaseInd = phases[phase.nextPhaseInd].ind; //move to the next phase
+                elapsedTimeInPhase = 0;
+            }
+        }
+        else if (phase.name.Equals(Globals.NL)) {            
+            nextPhaseInd = GetPhaseByName(Globals.D).ind;
         }
         else {
-            nextPhase = phases[phase.nextPhaseInd]; //move to the next phase
+            nextPhaseInd = phases[phase.nextPhaseInd].ind; //move to the next phase
             elapsedTimeInPhase = 0;
         }
 
         
-        return nextPhase.ind;
+        return nextPhaseInd;
     }
 
     public void Advance(float deltaTime) {
@@ -149,8 +161,8 @@ public class LiveCells : CellCycle {
     public LiveCells() {        
         float transitionRateDivision = 0.0432f / Globals.timeConst;
 
-        AddPhase(new PhaseT(0, Globals.G1, 1));
-        AddPhase(new PhaseT(1, Globals.M, 0));
+        AddPhase(new PhaseT(0, Globals.G1, 1, Color.red));
+        AddPhase(new PhaseT(1, Globals.M, 0, Color.green));
 
         AddTransitionRate(Globals.G1, Globals.M, transitionRateDivision, false);
     }
@@ -165,14 +177,14 @@ public class ApoptosisModel : CellCycle {
         base.phenotype = phenotype;
 
         //divided by 1 as it is fixed rate
-        float transitionRateApoptosis = 0.116297f / Globals.timeConst ;
+        float transitionRateApoptosis = 8.6f * Globals.timeConst ;
 
        
 
-        AddPhase(new PhaseT(0, Globals.A, 1));
-        AddPhase(new PhaseT(1, Globals.D, 1));
+        AddPhase(new PhaseT(0, Globals.A, 1, Color.red));
+        AddPhase(new PhaseT(1, Globals.D, 1, Color.green));
 
-        AddTransitionRate(Globals.A, Globals.D, 1f / transitionRateApoptosis, true);
+        AddTransitionRate(Globals.A, Globals.D, transitionRateApoptosis, true);
     }
 
     public override void EnterPhase(int phaseInd){
@@ -188,9 +200,69 @@ public class ApoptosisModel : CellCycle {
             base.phenotype.volume.fCytoplasmicToNuclear = 0;
             base.phenotype.volume.fFluid = 0;
 
-            base.phenotype.relativeRuptureVolume = 2f;
+            base.phenotype.volume.relativeRuptureVolume = 2f;
+            base.phenotype.volume.ruptureVolume = phenotype.volume.total * base.phenotype.volume.relativeRuptureVolume;
             base.phenotype.calcificationRate = 0; 
         }
+    }
+}
+
+
+
+[System.Serializable]
+public class NecrosisModel : CellCycle {
+
+    public NecrosisModel(CellPhenotype phenotype) {
+
+        base.phenotype = phenotype;
+
+        //divided by 1 as it is fixed rate
+        float transitionRateNecrosis0 = float.MaxValue;// set high so it's always evaluating against the "arrest" 
+        float transitionRateNecrosis1 = 24f * 60f * Globals.timeConst;// 60 days max
+        AddPhase(new PhaseT(0, Globals.NS, 1, Color.red));
+        AddPhase(new PhaseT(1, Globals.NL, 1, Color.green));
+
+        AddTransitionRate(Globals.NS, Globals.NL, transitionRateNecrosis0, false);
+        AddTransitionRate(Globals.NL, Globals.D,  transitionRateNecrosis1, true);
+
+    }
+
+    public override void EnterPhase(int phaseInd) {
+        PhaseT phase = GetPhaseByInd(phaseInd);
+        if (phase.name.Equals(Globals.NS)) { //standard necrosis entry
+
+            //update volume constants
+            base.phenotype.volume.rFluid = 0.67f / Globals.timeConst;  //unlysed
+            base.phenotype.volume.rCytoplasmic = 0.0032f / Globals.timeConst;
+            base.phenotype.volume.rNuclear = 0.013f / Globals.timeConst;
+
+            base.phenotype.volume.nuclearSolid = 0;
+            base.phenotype.volume.fCytoplasmicToNuclear = 0;
+            base.phenotype.volume.fFluid = 1f;
+
+            base.phenotype.volume.relativeRuptureVolume = 2f;
+            base.phenotype.volume.ruptureVolume = phenotype.volume.total * base.phenotype.volume.relativeRuptureVolume;
+            base.phenotype.calcificationRate = 0.0042f;
+        }
+        else if (phase.name.Equals(Globals.NL)) { //standard lysis entry
+
+            //update volume constants
+            base.phenotype.volume.rFluid = 0.05f / Globals.timeConst; //lysed
+            base.phenotype.volume.rCytoplasmic = 0.0032f / Globals.timeConst;
+            base.phenotype.volume.rNuclear = 0.013f / Globals.timeConst;
+
+            base.phenotype.volume.nuclearSolid = 0;
+            base.phenotype.volume.fCytoplasmicToNuclear = 0;
+            base.phenotype.volume.fFluid = 0;
+
+            base.phenotype.volume.relativeRuptureVolume = float.MaxValue; 
+            base.phenotype.volume.ruptureVolume = phenotype.volume.total * base.phenotype.volume.relativeRuptureVolume;
+            base.phenotype.calcificationRate = 0.0042f;
+        }
+
+
+
+
     }
 }
 
@@ -206,9 +278,9 @@ public class FlowCytometry : CellCycle {
         float SMRate = 0.00208f / Globals.timeConst;
         float MG1Rate = 0.00333f / Globals.timeConst;
 
-        AddPhase(new PhaseT(0, Globals.G1, 1));
-        AddPhase(new PhaseT(1, Globals.S, 2));
-        AddPhase(new PhaseT(2, Globals.M, 0));
+        AddPhase(new PhaseT(0, Globals.G1, 1, Color.red));
+        AddPhase(new PhaseT(1, Globals.S, 2, Color.green));
+        AddPhase(new PhaseT(2, Globals.M, 0, Color.blue));
 
 
         AddTransitionRate(Globals.G1, Globals.S, G1SRate, false);

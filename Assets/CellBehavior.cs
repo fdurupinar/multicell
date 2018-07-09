@@ -11,13 +11,13 @@ public class CellBehavior : MonoBehaviour {
     public float totalElapsedTime;
     public int id = 1;
 
-    public ApoptosisModel cellCycle;
+    public NecrosisModel cellCycle;
 
 
     // Use this for initialization
     void Start() {
         totalElapsedTime = 0;
-        cellCycle = new ApoptosisModel(phenotype);
+        cellCycle = new NecrosisModel(phenotype);
     }
 
 
@@ -27,21 +27,26 @@ public class CellBehavior : MonoBehaviour {
         //Volume and scale updates
         this.phenotype.volume.Update(Time.deltaTime);
 
+
         float radius = this.phenotype.volume.GetRadius();
 
         this.transform.localScale = new Vector3(radius, radius, radius);
 
 
 
+        PhaseT currentPhase = cellCycle.GetCurrentPhase();
+
+        this.GetComponent<Renderer>().material.color = currentPhase.color;
+
         ////cell cycle updates
         this.cellCycle.Advance(Time.deltaTime);
 
 
-        if (cellCycle.GetCurrentPhase().name == Globals.D) {
+        if (currentPhase.name == Globals.D) {
             this.KillCell();
         }
 
-        if (cellCycle.GetCurrentPhase().name == Globals.M) {
+        if (currentPhase.name == Globals.M) {
             this.Divide();
         }
 

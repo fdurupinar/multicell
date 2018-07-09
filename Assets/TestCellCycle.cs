@@ -15,7 +15,8 @@ public class TestCellCycle  {
         Assert.AreEqual(Globals.M, "M");
         Assert.AreEqual(Globals.A, "A");
         Assert.AreEqual(Globals.D, "D");
-        Assert.AreEqual(Globals.N, "N");
+        Assert.AreEqual(Globals.NS, "NS");
+        Assert.AreEqual(Globals.NL, "NL");
     }
     [Test]
     public void TestCellCycleInitialization(){
@@ -35,9 +36,9 @@ public class TestCellCycle  {
     [Test]
     public void TestFlowCytometryModel(){
         CellCycle cellCycle = new CellCycle();
-        cellCycle.AddPhase(new PhaseT(0, Globals.G1, 1));
-        cellCycle.AddPhase(new PhaseT(1, Globals.S, 2));
-        cellCycle.AddPhase(new PhaseT(2, Globals.M, 0));
+        cellCycle.AddPhase(new PhaseT(0, Globals.G1, 1, Color.red));
+        cellCycle.AddPhase(new PhaseT(1, Globals.S, 2, Color.green));
+        cellCycle.AddPhase(new PhaseT(2, Globals.M, 0, Color.blue));
 
         Assert.AreEqual(cellCycle.phases.Count, 3);
 

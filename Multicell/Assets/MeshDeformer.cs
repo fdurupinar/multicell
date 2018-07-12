@@ -48,6 +48,12 @@ public class MeshDeformer : MonoBehaviour {
 		}
 	}
 
+    public void AddDeformingForceAtPoint(Vector3 point, float force) {        
+        for (int i = 0; i < displacedVertices.Length; i++) {
+            AddForceToVertex(i, point, force);
+        }
+    }
+
 	void AddForceToVertex (int i, Vector3 point, float force) {
 		Vector3 pointToVertex = displacedVertices[i] - point;
 		pointToVertex *= uniformScale;

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 public class ParamGUI : MonoBehaviour {
     private Vector2 scrollPosition;
 
-    public bool mechanicsMode;
+    public bool mechanicsMode = true;
     public string maxCellCnt = Globals.maxCellCnt.ToString();
 
 	

@@ -10,7 +10,7 @@ public class CellBehavior : MonoBehaviour {
 
     public float totalElapsedTime;
     public int id = 1;
-    public Rigidbody rb;
+
     public TestDivisionCycle cellCycle;
 
 
@@ -30,8 +30,7 @@ public class CellBehavior : MonoBehaviour {
         totalElongationStepCnt = 100; 
         cellCycle = new TestDivisionCycle();
 
-        rb = GetComponent<Rigidbody>();
-
+       
         //direction to put the clone cell in
         randDirection = Utilities.GetRandomVector(0, 1);
         randDirection.Normalize();

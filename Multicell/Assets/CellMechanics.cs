@@ -81,12 +81,15 @@ public class CellMechanics : MonoBehaviour {
             if(dist < R){
                 rep = (1f - dist / R) * (1f - dist / R);
 
-                //Vector3 deformingForce = rep * Mathf.Sqrt(cellCellRepulsionStrength * otherMechanics.cellCellRepulsionStrength) / dist * distVec;
-                //GetComponent<MeshDeformer>().AddDeformingForce(rep, -distVec );
+              
                 
 
             }
             fRepulsion += -rep * Mathf.Sqrt(cellCellRepulsionStrength * otherMechanics.cellCellRepulsionStrength)/dist * distVec ;
+
+            float deformingForce = rep * Mathf.Sqrt(cellCellRepulsionStrength * otherMechanics.cellCellRepulsionStrength) / dist;
+            GetComponent<MeshDeformer>().AddDeformingForceAtPoint(rThis*distVec/dist, deformingForce );
+
 
             float maxAdhesiveInteractiveDistance = relativeMaxAdhesionDistance * rThis + otherMechanics.relativeMaxAdhesionDistance  * rOther;
 

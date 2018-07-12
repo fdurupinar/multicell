@@ -16,18 +16,12 @@ public class CellFactory : MonoBehaviour {
         for (int i = 0; i < this.cellCnt; i++) {
             cells[i] = (GameObject)Instantiate(UnityEngine.Resources.Load("Cell"), transform.position, transform.rotation);
 
-
-
         }
 
-        //Assign some cells velocity
-        for (int i = 0; i < 10; i++)
-            cells[i].GetComponent<CellMechanics>().v = Utilities.GetRandomVector(0.1f, 1f);
 
+        //	// Update is called once per frame
+        //	void Update () {
+        //		
+        //	}
     }
-
-    //	// Update is called once per frame
-    //	void Update () {
-    //		
-    //	}
 }

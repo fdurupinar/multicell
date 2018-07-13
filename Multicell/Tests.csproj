@@ -68,6 +68,7 @@
     <Compile Include="Assets\CellPhenotype.cs" />
     <Compile Include="Assets\CubeSphere.cs" />
     <Compile Include="Assets\Globals.cs" />
+    <Compile Include="Assets\MeshDeformer.cs" />
     <Compile Include="Assets\ParamGUI.cs" />
     <Compile Include="Assets\TestCellCycle.cs" />
     <Compile Include="Assets\Utilities.cs" />

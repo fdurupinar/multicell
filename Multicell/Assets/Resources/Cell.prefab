@@ -139,7 +139,6 @@ MonoBehaviour:
     calcificationRate: 0
   totalElapsedTime: 0
   id: 1
-  rb: {fileID: 0}
   cellCycle:
     phases:
     - ind: 0

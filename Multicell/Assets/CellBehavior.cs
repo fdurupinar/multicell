@@ -116,11 +116,11 @@ public class CellBehavior : MonoBehaviour {
     }
 
 
-    private void OnDrawGizmosSelected() {
-        Gizmos.color = Color.magenta;
-        Gizmos.DrawLine(transform.position, transform.position + randDirection* 5);
+    //private void OnDrawGizmosSelected() {
+    //    Gizmos.color = Color.magenta;
+    //    Gizmos.DrawLine(transform.position, transform.position + randDirection* 5);
 
 
-    }
+    //}
 
 }

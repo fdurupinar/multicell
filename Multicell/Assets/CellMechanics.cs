@@ -15,18 +15,20 @@ public class CellMechanics : MonoBehaviour {
     public float cellCellAdhesionStrength = 0.4f * 60f / Globals.timeConst;
     public float cellBMAdhesionStrength = 4.0f * 60f / Globals.timeConst;
 
-    public float cellCellRepulsionStrength = 10f * 60f /Globals.timeConst;
-    public float cellBMRepulsionStrength = 10.0f * 60f / Globals.timeConst;
 
     // this is a multiple of the cell (equivalent) radius
     public float relativeMaxAdhesionDistance = 1.25f;
 
 
+    public Vector3 fAdhesionCC;
+    public Vector3 fAdhesionBM;
+
+    private GameObject basementMembrane;
 
 
     //includes motility
-    public bool isMotile = false; 
-    
+    public bool isMotile = false;
+
     public float persistenceTime = 1f;
     public float migrationSpeed = 1f;
     public Vector3 migrationBiasDirection = new Vector3(3f, 0f, 0f);
@@ -34,18 +36,21 @@ public class CellMechanics : MonoBehaviour {
     public Vector3 motilityVector = new Vector3(3f, 0f, 0f);
 
 
-    public ArrayList collidingCells = new ArrayList();
+    private ArrayList collidingCells = new ArrayList();
 
-    public Vector3 fRepulsion;
-    public Vector3 fAdhesion;
+    private Vector3 cellBMContactVertex;
+    Matrix4x4 transformMatrixBM;
+
 
     // Use this for initialization
     void Start() {
 
         rb = GetComponent<Rigidbody>();
-
+        basementMembrane = GameObject.Find("BM");
 
         phenotype = GetComponent<CellBehavior>().phenotype;
+
+        transformMatrixBM = basementMembrane.transform.localToWorldMatrix;
 
     }
 
@@ -61,78 +66,131 @@ public class CellMechanics : MonoBehaviour {
 
     // Update is called once per frame
     public void FixedUpdate() {
-        
 
-        fRepulsion = Vector3.zero;
-        fAdhesion = Vector3.zero;
+        if (!Globals.animationRunning)
+            return;
 
 
-        foreach(GameObject other in collidingCells){
+        float dist;
+        Vector3 distVec;
+
+
+        float radius = phenotype.volume.GetRadius();
+        fAdhesionCC = ComputeCellCellAdhesion(radius);
+
+
+        cellBMContactVertex = GetCellBMContact(out dist, out distVec);
+
+        fAdhesionBM = ComputeCellBMAdhesion(radius, dist, distVec);
+
+        rb.AddForce(fAdhesionCC + fAdhesionBM, ForceMode.Acceleration);
+
+
+        //Add force on basement membrane
+        basementMembrane.GetComponent<MeshDeformer>().AddDeformingForce(cellBMContactVertex, Vector3.Magnitude(fAdhesionBM));
+
+
+    }
+
+    private Vector3 ComputeCellCellAdhesion(float radius) {
+
+        Vector3 f = Vector3.zero;
+
+
+        foreach (GameObject other in collidingCells) {
             CellMechanics otherMechanics = other.GetComponent<CellMechanics>();
             CellPhenotype otherPhenotype = other.GetComponent<CellBehavior>().phenotype;
             float rOther = otherPhenotype.volume.GetRadius();
-            float rThis = phenotype.volume.GetRadius();
-            float R = rOther + rThis;
+
+
 
             Vector3 distVec = other.transform.position - this.transform.position;
             float dist = Vector3.Magnitude(distVec);
 
-            float rep = 1;
-
-            if(dist < R){
-                rep = (1f - dist / R) * (1f - dist / R);
-            }
-
-            fRepulsion += -rep * Mathf.Sqrt(cellCellRepulsionStrength * otherMechanics.cellCellRepulsionStrength)/dist * distVec ;
-
-            float maxAdhesiveInteractiveDistance = relativeMaxAdhesionDistance * rThis + otherMechanics.relativeMaxAdhesionDistance  * rOther;
+            float maxAdhesiveInteractiveDistance = relativeMaxAdhesionDistance * radius + otherMechanics.relativeMaxAdhesionDistance * rOther;
 
 
             if (dist < maxAdhesiveInteractiveDistance) {
-                
-                fAdhesion += Mathf.Sqrt(cellCellAdhesionStrength * otherMechanics.cellCellAdhesionStrength) * (1f - dist / maxAdhesiveInteractiveDistance) * distVec;
+                f += Mathf.Sqrt(cellCellAdhesionStrength * otherMechanics.cellCellAdhesionStrength) * Mathf.Pow((1f - dist / maxAdhesiveInteractiveDistance), 2) * distVec;
             }
         }
 
-        //Repulsion is handled by the rigidBody controller automatically. 
-
-        //rb.AddForce(fRepulsion + fAdhesion, ForceMode.Acceleration);
-
-
-        rb.AddForce(fAdhesion, ForceMode.Acceleration);
+        return f;
+    }
 
 
+    private Vector3 GetCellBMContact(out float dist, out Vector3 distVec) {
+        Mesh bmMesh = basementMembrane.GetComponent<MeshFilter>().mesh;
+        dist = float.MaxValue;
+        distVec = new Vector3(dist, dist, dist);
+        Vector3 contactVertex = basementMembrane.transform.position;
 
+
+
+        foreach (Vector3 vertex in bmMesh.vertices) {
+            Vector3 tmpVec = transformMatrixBM.MultiplyPoint3x4(vertex) - transform.position;
+            float tmp = Vector3.Magnitude(tmpVec);
+            if (tmp < dist) {
+                dist = tmp;
+                distVec = tmpVec;
+                contactVertex = vertex;
+            }
+        }
+
+        return contactVertex;
+
+    }
+    private Vector3 ComputeCellBMAdhesion(float radius, float dist, Vector3 distVec) {
+
+        Vector3 f = Vector3.zero;
+
+        float maxAdhesiveInteractiveDistance = relativeMaxAdhesionDistance * radius;
+
+        if (dist < maxAdhesiveInteractiveDistance)
+            f = cellBMAdhesionStrength * Mathf.Pow((1f - dist / maxAdhesiveInteractiveDistance), 2) * distVec;
+
+
+        return f;
+
+    }
+    private void AddForceOnBasementMembrane(Vector3 contactPoint, float fMagnitude) {
+        basementMembrane.GetComponent<MeshDeformer>().AddDeformingForce(contactPoint, fMagnitude);
     }
 
     private void OnTriggerEnter(Collider other) {
-        
-        if (other.gameObject.CompareTag("Cell") && !collidingCells.Contains(other))             
+
+        if (other.gameObject.CompareTag("Cell") && !collidingCells.Contains(other))
             collidingCells.Add(other.gameObject);
     }
 
-    private void OnTriggerExit(Collider other) {        
-        if (other.gameObject.CompareTag("Cell"))             
+    private void OnTriggerExit(Collider other) {
+        if (other.gameObject.CompareTag("Cell"))
             collidingCells.Remove(other.gameObject);
     }
 
 
     private void OnDrawGizmosSelected() {
-        
-
-        Vector3 fVec = fRepulsion + fAdhesion;
 
         Gizmos.color = Color.blue;
-        Gizmos.DrawLine(transform.position, transform.position + fAdhesion);
+        Gizmos.DrawLine(transform.position, transform.position + fAdhesionCC);
 
         Gizmos.color = Color.red;
-        Gizmos.DrawLine(transform.position, transform.position + fRepulsion);
+        Gizmos.DrawLine(transform.position, transform.position + fAdhesionBM);
+
+        Gizmos.DrawSphere(transformMatrixBM.MultiplyPoint3x4(cellBMContactVertex), 1f);
 
 
-        Gizmos.color = Color.yellow;
-        Gizmos.DrawLine(transform.position, transform.position + fVec);
 
+        //if (basementMembrane) {
+        //    Mesh bmMesh = basementMembrane.GetComponent<MeshFilter>().mesh;
+
+
+        //    Gizmos.color = Color.blue;
+
+        //    foreach (Vector3 vertex in bmMesh.vertices) {
+                
+        //        Gizmos.DrawSphere(transformMatrixBM.MultiplyPoint3x4(vertex), 1f);
+        //    }
+        //}
     }
-
-
 }

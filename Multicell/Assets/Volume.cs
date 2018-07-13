@@ -80,7 +80,6 @@ public class Volume {
 
     public float GetRadius() {
 
-
         const float coef = 0.23873241463f;
 
         return (float)Math.Pow(total * coef, 0.3333333333333f);

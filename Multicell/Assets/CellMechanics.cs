@@ -61,6 +61,7 @@ public class CellMechanics : MonoBehaviour {
 
     // Update is called once per frame
     public void FixedUpdate() {
+        
 
         fRepulsion = Vector3.zero;
         fAdhesion = Vector3.zero;
@@ -80,13 +81,9 @@ public class CellMechanics : MonoBehaviour {
 
             if(dist < R){
                 rep = (1f - dist / R) * (1f - dist / R);
-
-              
-                
-
             }
-            fRepulsion += -rep * Mathf.Sqrt(cellCellRepulsionStrength * otherMechanics.cellCellRepulsionStrength)/dist * distVec ;
 
+            fRepulsion += -rep * Mathf.Sqrt(cellCellRepulsionStrength * otherMechanics.cellCellRepulsionStrength)/dist * distVec ;
 
             float maxAdhesiveInteractiveDistance = relativeMaxAdhesionDistance * rThis + otherMechanics.relativeMaxAdhesionDistance  * rOther;
 

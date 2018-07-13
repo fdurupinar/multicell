@@ -2,6 +2,7 @@
 
 public static class Globals {
 
+    public static bool animationRunning = false;
     public static int maxCellCnt = 1000;
     public static bool animateDivision = false;
 

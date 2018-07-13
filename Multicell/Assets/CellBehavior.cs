@@ -21,16 +21,12 @@ public class CellBehavior : MonoBehaviour {
     Vector3 randDirection;
     public int totalElongationStepCnt; 
 
-
-
-
     // Use this for initialization
     void Start() {
         totalElapsedTime = 0;
         totalElongationStepCnt = 100; 
         cellCycle = new TestDivisionCycle();
-
-       
+               
         //direction to put the clone cell in
         randDirection = Utilities.GetRandomVector(0, 1);
         randDirection.Normalize();
@@ -38,7 +34,8 @@ public class CellBehavior : MonoBehaviour {
 
 
     void FixedUpdate() {
-
+        if (!Globals.animationRunning)
+            return;
 
         float radius;
 
@@ -78,7 +75,7 @@ public class CellBehavior : MonoBehaviour {
                 float scaleCoef = ((float)elongationStepCnt/totalElongationStepCnt)* 0.5f + 1f; //elongate in one dimension
                 float scaleCoef2 = Mathf.Sqrt((4f/7f)/ scaleCoef); //shrink other dimensions to keep volume fixed
 
-                this.transform.localScale = new Vector3(radius * scaleCoef2,radius * scaleCoef,radius* scaleCoef2); //scale in y direction and then rotate
+                this.transform.localScale = new Vector3(radius * scaleCoef2*2,radius * scaleCoef*2,radius* scaleCoef2*2); //scale in y direction and then rotate
                 transform.rotation = Quaternion.LookRotation(randDirection);
 
                 elongationStepCnt++;

@@ -226,8 +226,8 @@ Camera:
   m_GameObject: {fileID: 282840810}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.043137256, g: 0.043137256, b: 0.043137256, a: 1}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0.3
@@ -334,6 +334,18 @@ Prefab:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 4639443042475740, guid: bc0ac56a8f9d94e2da6dbe7f61229cac, type: 2}
+      propertyPath: m_LocalScale.x
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4639443042475740, guid: bc0ac56a8f9d94e2da6dbe7f61229cac, type: 2}
+      propertyPath: m_LocalScale.y
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4639443042475740, guid: bc0ac56a8f9d94e2da6dbe7f61229cac, type: 2}
+      propertyPath: m_LocalScale.z
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 100100000, guid: bc0ac56a8f9d94e2da6dbe7f61229cac, type: 2}
   m_IsPrefabParent: 0
@@ -366,7 +378,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2079d458633254b55b01b0262c4e55a9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mechanicsMode: 0
+  mechanicsMode: 1
   maxCellCnt: 1000
 --- !u!81 &1902805860
 AudioListener:
@@ -384,7 +396,7 @@ Camera:
   m_Enabled: 1
   serializedVersion: 2
   m_ClearFlags: 2
-  m_BackGroundColor: {r: 0.6509804, g: 0.6313726, b: 0.6431373, a: 1}
+  m_BackGroundColor: {r: 0.6509804, g: 0.6509804, b: 0.6509804, a: 1}
   m_NormalizedViewPortRect:
     serializedVersion: 2
     x: 0

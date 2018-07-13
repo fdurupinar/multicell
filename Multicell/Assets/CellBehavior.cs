@@ -47,7 +47,8 @@ public class CellBehavior : MonoBehaviour {
 
             radius = this.phenotype.volume.GetRadius();
 
-            this.transform.localScale = new Vector3(radius, radius, radius);
+            //scale for 1 is radius*2 --> different from collider
+            this.transform.localScale = new Vector3(radius*2, radius*2, radius*2);
 
 
             this.cellCycle.Advance(Time.deltaTime);
@@ -85,12 +86,10 @@ public class CellBehavior : MonoBehaviour {
             else {
                 this.Divide(Vector3.up);
                 divisionPhase = false;
-            }
-                
+            }               
         }
 
         totalElapsedTime += Time.deltaTime;
-
     }
 
 
@@ -108,9 +107,10 @@ public class CellBehavior : MonoBehaviour {
 
         float radius = this.phenotype.volume.GetRadius();
 
-        Vector3 deltaPos = direction * radius * 2;
+        Vector3 deltaPos = direction * radius;
 
         clone.transform.Translate(deltaPos.x, deltaPos.y, deltaPos.z);
+        transform.Translate(-deltaPos.x, -deltaPos.y, -deltaPos.z);
 
     }
        
@@ -122,6 +122,7 @@ public class CellBehavior : MonoBehaviour {
     private void OnDrawGizmosSelected() {
         Gizmos.color = Color.magenta;
         Gizmos.DrawLine(transform.position, transform.position + randDirection* 5);
+
 
     }
 

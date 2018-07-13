@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 
-//Attached to the agent
+
 public class ParamGUI : MonoBehaviour {
     private Vector2 scrollPosition;
 

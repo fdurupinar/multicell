@@ -81,9 +81,9 @@ public class Volume {
     public float GetRadius() {
 
 
-        const float four_thirds_pi = 0.42441318157816f;
+        const float coef = 0.23873241463f;
 
-        return (float)Math.Pow(total * four_thirds_pi, 0.3333333333333f);
+        return (float)Math.Pow(total * coef, 0.3333333333333f);
     }
 
 
@@ -91,9 +91,9 @@ public class Volume {
     public float GetNuclearRadius() {
 
 
-        const float four_thirds_pi = 0.42441318157816f;
+        const float coef = 0.23873241463f;
 
-        return (float)Math.Pow(nuclear * four_thirds_pi, 0.3333333333333f);
+        return (float)Math.Pow(nuclear * coef, 0.3333333333333f);
     }
 
     public double GetMass(){

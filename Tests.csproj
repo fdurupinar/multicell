@@ -62,13 +62,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Assets\CameraControl3dsMaxStyle.cs" />
+    <Compile Include="Assets\CartesianMesh.cs" />
     <Compile Include="Assets\CellBehavior.cs" />
     <Compile Include="Assets\CellCycle.cs" />
-    <Compile Include="Assets\CellFactory.cs" />
     <Compile Include="Assets\CellMechanics.cs" />
     <Compile Include="Assets\CellPhenotype.cs" />
+    <Compile Include="Assets\CubeSphere.cs" />
     <Compile Include="Assets\Globals.cs" />
-    <Compile Include="Assets\paramGUI.cs" />
+    <Compile Include="Assets\MeshDeformer.cs" />
+    <Compile Include="Assets\Microenvironment.cs" />
+    <Compile Include="Assets\ParamGUI.cs" />
     <Compile Include="Assets\TestCellCycle.cs" />
     <Compile Include="Assets\Utilities.cs" />
     <Compile Include="Assets\Volume.cs" />

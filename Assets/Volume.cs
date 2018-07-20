@@ -7,7 +7,7 @@ public class Volume {
 
     //Initialized with breast epithelial cell parameters
 
-    public float total = 2494;
+    public float total = 2494; //microm3
 
 
     public float targetNuclear = 540f;
@@ -37,6 +37,10 @@ public class Volume {
 
     public float ruptureVolume;
     public float relativeRuptureVolume  = 0;
+
+    public float densityWater = 1f; //kg/m3
+    public float densitySolid = 1.3f; //kg/m3
+        
 
 
 
@@ -76,14 +80,25 @@ public class Volume {
 
     public float GetRadius() {
 
+        const float coef = 0.23873241463f;
 
-        const float four_thirds_pi = 0.42441318157816f;
-
-        return (float)Math.Pow(total * four_thirds_pi, 0.3333333333333f);
-
+        return (float)Math.Pow(total * coef, 0.3333333333333f);
     }
 
-    public void Update(float deltaTime) {
+
+
+    public float GetNuclearRadius() {
+
+
+        const float coef = 0.23873241463f;
+
+        return (float)Math.Pow(nuclear * coef, 0.3333333333333f);
+    }
+
+    public double GetMass(){
+        return densitySolid * solid + densityWater * fluid;
+    }
+    public void UpdateVolume(float deltaTime) {
 
 
         fluid += deltaTime * rFluid * (fFluid * total - fluid);

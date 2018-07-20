@@ -11,52 +11,88 @@ public class CellBehavior : MonoBehaviour {
     public float totalElapsedTime;
     public int id = 1;
 
-    public NecrosisModel cellCycle;
+    public TestDivisionCycle cellCycle;
 
+
+
+
+    bool divisionPhase = false;
+    int elongationStepCnt = 0;
+    Vector3 randDirection;
+    public int totalElongationStepCnt; 
 
     // Use this for initialization
     void Start() {
         totalElapsedTime = 0;
-        cellCycle = new NecrosisModel(phenotype);
+        totalElongationStepCnt = 100; 
+        cellCycle = new TestDivisionCycle();
+               
+        //direction to put the clone cell in
+        randDirection = Utilities.GetRandomVector(0, 1);
+        randDirection.Normalize();
     }
 
 
     void FixedUpdate() {
+        if (!Globals.animationRunning)
+            return;
+
+        float radius;
+
+        if (!divisionPhase) {
+            this.phenotype.volume.UpdateVolume(Time.deltaTime);
+
+            radius = this.phenotype.volume.GetRadius();
+
+            //scale for 1 is radius*2 --> different from collider
+            this.transform.localScale = new Vector3(radius*2, radius*2, radius*2);
 
 
-        //Volume and scale updates
-        this.phenotype.volume.Update(Time.deltaTime);
+            this.cellCycle.Advance(Time.deltaTime);
 
+            PhaseT currentPhase = cellCycle.GetCurrentPhase();
+            this.GetComponent<Renderer>().material.color = currentPhase.color;
 
-        float radius = this.phenotype.volume.GetRadius();
+            if (currentPhase.name.Equals(Globals.D)) {
+                this.KillCell();
+            }
 
-        this.transform.localScale = new Vector3(radius, radius, radius);
-
-
-
-        PhaseT currentPhase = cellCycle.GetCurrentPhase();
-
-        this.GetComponent<Renderer>().material.color = currentPhase.color;
-
-        ////cell cycle updates
-        this.cellCycle.Advance(Time.deltaTime);
-
-
-        if (currentPhase.name == Globals.D) {
-            this.KillCell();
+            if (Globals.cellCnt < Globals.maxCellCnt) {
+                if (currentPhase.name.Equals(Globals.M)) {
+                    if (Globals.animateDivision) {
+                        divisionPhase = true;
+                        elongationStepCnt = 0;
+                    }
+                    else //divide abruptly without animation
+                        this.Divide(randDirection);
+                }
+            }
         }
+        else{
+            //division step with animation
+            if (elongationStepCnt < totalElongationStepCnt) {
+                radius = this.phenotype.volume.GetRadius();
+                float scaleCoef = ((float)elongationStepCnt/totalElongationStepCnt)* 0.5f + 1f; //elongate in one dimension
+                float scaleCoef2 = Mathf.Sqrt((4f/7f)/ scaleCoef); //shrink other dimensions to keep volume fixed
 
-        if (currentPhase.name == Globals.M) {
-            this.Divide();
+                this.transform.localScale = new Vector3(radius * scaleCoef2*2,radius * scaleCoef*2,radius* scaleCoef2*2); //scale in y direction and then rotate
+                transform.rotation = Quaternion.LookRotation(randDirection);
+
+                elongationStepCnt++;
+            }
+            else {
+                this.Divide(Vector3.up);
+                divisionPhase = false;
+            }               
         }
 
         totalElapsedTime += Time.deltaTime;
-
     }
 
 
     //Make a clone of this sphere and reduce its volume
-    void Divide() {
+    //new cell will be to the randDirection
+    void Divide(Vector3 direction) {
 
         //create clone with the same volume and radius
         GameObject clone = (GameObject)Instantiate(this.gameObject, transform.position, transform.rotation);
@@ -68,16 +104,23 @@ public class CellBehavior : MonoBehaviour {
 
         float radius = this.phenotype.volume.GetRadius();
 
-        Vector3 randVec = Utilities.GetRandomVector(0, 1);
-        randVec.Normalize();
-
-        Vector3 deltaPos = randVec * radius;
+        Vector3 deltaPos = direction * radius;
 
         clone.transform.Translate(deltaPos.x, deltaPos.y, deltaPos.z);
+        transform.Translate(-deltaPos.x, -deltaPos.y, -deltaPos.z);
 
     }
        
     void KillCell() {
         Destroy(this.gameObject);
     }
+
+
+    //private void OnDrawGizmosSelected() {
+    //    Gizmos.color = Color.magenta;
+    //    Gizmos.DrawLine(transform.position, transform.position + randDirection* 5);
+
+
+    //}
+
 }

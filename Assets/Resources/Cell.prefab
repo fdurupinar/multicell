@@ -9,34 +9,36 @@ Prefab:
     m_Modifications: []
     m_RemovedComponents: []
   m_ParentPrefab: {fileID: 0}
-  m_RootGameObject: {fileID: 1252977018181342}
+  m_RootGameObject: {fileID: 1862341207536430}
   m_IsPrefabParent: 1
---- !u!1 &1252977018181342
+--- !u!1 &1862341207536430
 GameObject:
   m_ObjectHideFlags: 0
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
   serializedVersion: 5
   m_Component:
-  - component: {fileID: 4486924473781580}
-  - component: {fileID: 33104736755635916}
-  - component: {fileID: 135605008787588832}
-  - component: {fileID: 23753784345578584}
-  - component: {fileID: 54309242793572952}
-  - component: {fileID: 114956726297282610}
+  - component: {fileID: 4639443042475740}
+  - component: {fileID: 33840005408382264}
+  - component: {fileID: 135633812979684516}
+  - component: {fileID: 23823145078216692}
+  - component: {fileID: 54834557377694736}
+  - component: {fileID: 114144353542600396}
+  - component: {fileID: 114293380384909732}
+  - component: {fileID: 136574156155561946}
   m_Layer: 0
   m_Name: Cell
-  m_TagString: Untagged
+  m_TagString: Cell
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &4486924473781580
+--- !u!4 &4639443042475740
 Transform:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1252977018181342}
+  m_GameObject: {fileID: 1862341207536430}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
@@ -44,12 +46,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!23 &23753784345578584
+--- !u!23 &23823145078216692
 MeshRenderer:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1252977018181342}
+  m_GameObject: {fileID: 1862341207536430}
   m_Enabled: 1
   m_CastShadows: 0
   m_ReceiveShadows: 0
@@ -79,34 +81,34 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!33 &33104736755635916
+--- !u!33 &33840005408382264
 MeshFilter:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1252977018181342}
+  m_GameObject: {fileID: 1862341207536430}
   m_Mesh: {fileID: 10207, guid: 0000000000000000e000000000000000, type: 0}
---- !u!54 &54309242793572952
+--- !u!54 &54834557377694736
 Rigidbody:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1252977018181342}
+  m_GameObject: {fileID: 1862341207536430}
   serializedVersion: 2
   m_Mass: 1
-  m_Drag: 0
-  m_AngularDrag: 0.05
+  m_Drag: 100
+  m_AngularDrag: 100
   m_UseGravity: 0
   m_IsKinematic: 0
   m_Interpolate: 0
   m_Constraints: 0
   m_CollisionDetection: 0
---- !u!114 &114956726297282610
+--- !u!114 &114144353542600396
 MonoBehaviour:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1252977018181342}
+  m_GameObject: {fileID: 1862341207536430}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: da12c64d55861469ba9d1d724d2b913b, type: 3}
@@ -132,22 +134,95 @@ MonoBehaviour:
       rCytoplasmic: 0.27
       ruptureVolume: 0
       relativeRuptureVolume: 0
+      densityWater: 1
+      densitySolid: 1.3
     calcificationRate: 0
   totalElapsedTime: 0
   id: 1
   cellCycle:
-    phases: []
+    phases:
+    - ind: 0
+      name: G1
+      color: {r: 1, g: 0.9764706, b: 0.7047059, a: 1}
+      nextPhaseInd: 1
+    - ind: 1
+      name: M
+      color: {r: 0.7, g: 1, b: 0.7, a: 1}
+      nextPhaseInd: 0
     currentPhaseInd: 0
     elapsedTimeInPhase: 0
---- !u!135 &135605008787588832
+  totalElongationStepCnt: 10
+--- !u!114 &114293380384909732
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1862341207536430}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a2b5ff3fde6814e39bb7156294a6a152, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  orientation: {x: 0, y: 0, z: 0}
+  phenotype:
+    volume:
+      total: 2494
+      targetNuclear: 540
+      nuclear: 540
+      cytoplasmic: 0
+      fluid: 1870.5
+      solid: 623.5
+      nuclearFluid: 405
+      nuclearSolid: 135
+      cytoplasmicFluid: 0
+      cytoplasmicSolid: 0
+      targetNuclearSolid: 135
+      fCytoplasmicToNuclear: 3.6
+      fFluid: 0.75
+      rFluid: 3
+      rNuclear: 0.33
+      rCytoplasmic: 0.27
+      ruptureVolume: 0
+      relativeRuptureVolume: 0
+      densityWater: 1
+      densitySolid: 1.3
+    calcificationRate: 0
+  rb: {fileID: 0}
+  cellCellAdhesionStrength: 24
+  cellBMAdhesionStrength: 240
+  cellCellRepulsionStrength: 600
+  cellBMRepulsionStrength: 600
+  relativeMaxAdhesionDistance: 1.25
+  isMotile: 0
+  persistenceTime: 1
+  migrationSpeed: 1
+  migrationBiasDirection: {x: 3, y: 0, z: 0}
+  migrationBias: 0
+  motilityVector: {x: 3, y: 0, z: 0}
+  fRepulsion: {x: 0, y: 0, z: 0}
+  fAdhesion: {x: 0, y: 0, z: 0}
+--- !u!135 &135633812979684516
 SphereCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
   m_PrefabInternal: {fileID: 100100000}
-  m_GameObject: {fileID: 1252977018181342}
+  m_GameObject: {fileID: 1862341207536430}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 1
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Radius: 1.5
+  m_Center: {x: 0, y: 0, z: 0}
+--- !u!136 &136574156155561946
+CapsuleCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1862341207536430}
   m_Material: {fileID: 0}
   m_IsTrigger: 0
   m_Enabled: 1
-  serializedVersion: 2
   m_Radius: 0.5
+  m_Height: 1
+  m_Direction: 1
   m_Center: {x: 0, y: 0, z: 0}

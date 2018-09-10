@@ -40,7 +40,7 @@ public class CellMechanics : MonoBehaviour {
 
     private Vector3 cellBMContactVertex;
     Matrix4x4 transformMatrixBM;
-    Matrix4x4 inverseTransformMatrixBM;
+
 
 
     // Use this for initialization
@@ -52,8 +52,7 @@ public class CellMechanics : MonoBehaviour {
         phenotype = GetComponent<CellBehavior>().phenotype;
 
         transformMatrixBM = basementMembrane.transform.localToWorldMatrix;
-        inverseTransformMatrixBM = transformMatrixBM.inverse;
-
+    
         //Represent bm as a cloth
 
         ////Capsule colliders is a property 

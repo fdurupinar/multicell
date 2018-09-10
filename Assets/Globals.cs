@@ -30,6 +30,25 @@ public static class Globals {
     public static float massVolumeConst = 0.0004f; //1/2494
 
 
+    public static float diffusionDt = 0.01f;
+    public static float mechanicsDt = 0.1f;
+    public static float phenotypeDt = 6f;
+
+
+    public static int meshMinXIndex = 0;
+    public static int meshMinYIndex = 1;
+    public static int meshMinZIndex = 2;
+    public static int meshMaxXIndex = 3;
+    public static int meshMaxYIndex = 4;
+    public static int meshMaxZIndex = 5;
+
+    public static int meshLXFaceIndex = 0;
+    public static int meshLYFaceIndex = 1;
+    public static int meshLZFaceIndex = 2;
+    public static int meshUXFaceIndex = 3;
+    public static int meshUYFaceIndex = 4;
+    public static int meshUZFaceIndex = 5;
+
   
 
 }

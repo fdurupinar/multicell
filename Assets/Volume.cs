@@ -42,9 +42,6 @@ public class Volume {
     public float densitySolid = 1.3f; //kg/m3
         
 
-
-
-
     public Volume() {
 
         fluid = fFluid * total;

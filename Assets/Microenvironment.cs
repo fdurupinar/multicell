@@ -2,8 +2,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System.Threading.Tasks; 
 
-
+[System.Serializable]
 public class MicroenvironmentOptions{
     public Microenvironment microenvironment;
     public string name;
@@ -15,9 +16,9 @@ public class MicroenvironmentOptions{
     public List<float> dirichletConditionVector;
     public List<bool> dirichletActivationVector;
 
-    List<float> xRange;
-    List<float> yRange;
-    List<float> zRange;
+    public List<float> xRange;
+    public List<float> yRange;
+    public List<float> zRange;
 
     public bool calculateGradients;
     public bool useOxygenAsFirstField;
@@ -43,6 +44,22 @@ public class MicroenvironmentOptions{
         outerDirichletConditions = false;
         dirichletConditionVector.Add(38f);
 
+
+        xRange.Add(50f);
+        xRange.Add(50f);
+        xRange[0] *= -1f;
+
+        yRange.Add(50f);
+        yRange.Add(50f);
+        yRange[0] *= -1f;
+
+        zRange.Add(50f);
+        zRange.Add(50f);
+        zRange[0] *= -1f;
+
+        //TODO: Funda?
+        /*
+         *
         xRange.Add(500f);
         xRange.Add(500f);
         xRange[0] *= -1f;
@@ -54,100 +71,108 @@ public class MicroenvironmentOptions{
         zRange.Add(500f);
         zRange.Add(500f);
         zRange[0] *= -1f;
-
+*/
         calculateGradients = false;
     }
 }
 
+[System.Serializable]
 public class Microenvironment {
 
     public string name;
     public string timeUnits;
     public string spatialUnits;
 
+
     public CartesianMesh mesh;
 
-    List<float> zero;
-    List<float> one;
+    public List <float> zero;
+    public List<float> one;
 
-    List<List<float>> dirichletValueVectors;
-    List<float> dirichletConditionVector;
-    List<bool> dirichletActivationVector;
+    public List<List<float>> dirichletValueVectors;
+    public List<float> dirichletConditionVector;
+    public List<bool> dirichletActivationVector;
 
-    List<List<float>> densityVectors;
-    List<List<float>> temporaryDensityVectors1;
-    List<List<float>> temporaryDensityVectors2;
-
-
-    List<List<float>> bulkSourceAndSinkSolverTemp1;
-    List<List<float>> bulkSourceAndSinkSolverTemp2;
-    List<List<float>> bulkSourceAndSinkSolverTemp3;
-    List<List<float>> bulkSourceAndSinkSolverTemp4;
-
-    List<List<float>> supplyTargetDensitiesTimesSupplyRates;
-    List<List<float>> supplyRates;
-    List<List<float>> uptakeRates;
+    public List<List<float>> densityVectors;
+    //public List<List<float>> temporaryDensityVectors1;
+    //public List<List<float>> temporaryDensityVectors2;
 
 
-    List<List<float>> thomasTemp1;
-    List<List<float>> thomasTemp2;
+    public List<List<float>> bulkSourceAndSinkSolverTemp1;
+    public List<List<float>> bulkSourceAndSinkSolverTemp2;
+    public List<List<float>> bulkSourceAndSinkSolverTemp3;
+    public List<List<float>> bulkSourceAndSinkSolverTemp4;
 
-    List<Vector3> thomasConstant1Vec;
-    List<Vector3> thomasNegConstant1Vec;
-
-    List<float> thomasConstant1;
-    List<float> thomasConstant1a;
-    List<float> thomasConstant2;
-    List<float> thomasConstant3;
-    List<float> thomasConstant3a;
-
-    List<List<Vector3>> thomasDenom;
-    List<List<Vector3>> thomasC;
+    public List<List<float>> supplyTargetDensitiesTimesSupplyRates;
+    public List<List<float>> supplyRates;
+    public List<List<float>> uptakeRates;
 
 
-    bool thomasSetupDone;
-    int thomasIJump;
-    int thomasJJump;
-    int thomasKJump;
+    public List<List<float>> thomasTemp1;
+    public List<List<float>> thomasTemp2;
+
+    public List<Vector3> thomasConstant1Vec;
+    public List<Vector3> thomasNegConstant1Vec;
+
+    public List<float> thomasConstant1;
+    public List<float> thomasConstant1a;
+    public List<float> thomasConstant2;
+    public List<float> thomasConstant3;
+    public List<float> thomasConstant3a;
+
+    public List<List<float>> thomasDenomX;
+    public List<List<float>> thomasDenomY;
+    public List<List<float>> thomasDenomZ;
+    public List<List<float>> thomasCX;
+    public List<List<float>> thomasCY;
+    public List<List<float>> thomasCZ;
+
+
+    public bool thomasSetupDone;
+    public int thomasIJump;
+    public int thomasJJump;
+    public int thomasKJump;
 
 
     bool bulkSourceAndSinkSolverSetupDone;
 
 
 
-    List<List<List<float>>> gradientVectors;
-    List<bool> gradientVectorComputed;
+    public List<List<List<float>>> gradientVectors;
+    public List<bool> gradientVectorComputed;
 
-    List<float> diffusionCoefficients;
-    List<float> decayRates;
+    public List<float> diffusionCoefficients;
+    public List<float> decayRates;
 
-    bool diffusionSolverSetupDone;
+    public bool diffusionSolverSetupDone;
 
-    List<string> densityNames;
-    List<string> densityUnits;
+    public List<string> densityNames;
+    public List<string> densityUnits;
 
 
-     //TODO:
-    //should this be static?
-    MicroenvironmentOptions defaultMicroenvironmentOptions;
+
+    //assigned outside
+    public  MicroenvironmentOptions microenvironmentOptions;
 
 
     public Microenvironment(){
+
 
         mesh = new CartesianMesh();
         mesh.Resize(1, 1, 1);
 
         zero = new List<float>();
         one = new List<float>();
+        zero.Resize(1, 0f);
+        one.Resize(1, 1f);
 
         dirichletValueVectors = new List<List<float>>();
         dirichletConditionVector = new List<float>();
         dirichletActivationVector = new List<bool>();
 
         densityVectors = new List<List<float>>();
-        temporaryDensityVectors1 = new List<List<float>>();
-        temporaryDensityVectors2 = new List<List<float>>();
 
+        densityVectors.Resize(GetNumberOfVoxels(), zero);
 
         bulkSourceAndSinkSolverTemp1 = new List<List<float>>();
         bulkSourceAndSinkSolverTemp2 = new List<List<float>>();
@@ -170,11 +195,17 @@ public class Microenvironment {
         thomasConstant3 = new List<float>();
         thomasConstant3a = new List<float>();
 
-        thomasDenom = new List<List<Vector3>>();
-        thomasC = new List<List<Vector3>>();
+        thomasDenomX = new List<List<float>>();
+        thomasDenomY = new List<List<float>>();
+        thomasDenomZ = new List<List<float>>();
 
+        thomasCX = new List<List<float>>();
+        thomasCY = new List<List<float>>();
+        thomasCZ = new List<List<float>>();
 
         gradientVectors = new List<List<List<float>>>();
+
+
         gradientVectorComputed = new List<bool>();
 
         diffusionCoefficients = new List<float>();
@@ -184,8 +215,7 @@ public class Microenvironment {
         densityNames = new List<string>();
         densityUnits = new List<string>();
 
-        zero.Add(0f);
-        one.Add(1f);
+
 
 
         name = "unnamed";
@@ -196,38 +226,25 @@ public class Microenvironment {
         thomasSetupDone = false;
         diffusionSolverSetupDone = false;
 
-        for (int i = 0; i < mesh.voxels.Count; i++) {
-            temporaryDensityVectors1[i] = new List<float>(zero);
-            temporaryDensityVectors2[i] = new List<float>(zero);
-
-            gradientVectors[i] = new List<List<float>>();
-            List<float> ones = new List<float>();
-            ones.Add(0);
-            ones.Add(0);
-            ones.Add(0);
-
-            gradientVectors[i].Add(ones);
-
-            gradientVectorComputed[i] = false;
-
-            dirichletValueVectors[i] = new List<float>(one);
-
-
-            dirichletActivationVector.Add(true);
+        gradientVectors.Resize(GetNumberOfVoxels());
+        for (int i = 0; i < GetNumberOfVoxels(); i++) {
+            gradientVectors[i].Resize(1);
+            gradientVectors[i][0].Resize(3, 0f);
         }
 
+        gradientVectorComputed.Resize(GetNumberOfVoxels(), false);
+                              
         densityNames.Add("unnamed");
         densityUnits.Add("none");
 
-        for (int i = 0; i < GetNumberOfDensities(); i++) {
-            diffusionCoefficients.Add(0f);
-            decayRates.Add(0f);
-        }
+
+        diffusionCoefficients.Assign(GetNumberOfDensities(), 0f);
+        decayRates.Assign(GetNumberOfDensities(), 0f);
+
+        dirichletValueVectors.Assign(GetNumberOfVoxels(), one);
+        dirichletActivationVector.Assign(1, true);
 
 
-        //TODO:
-        //should this be static?
-        defaultMicroenvironmentOptions = new MicroenvironmentOptions();
     }
 
     //Calls the other one
@@ -237,7 +254,7 @@ public class Microenvironment {
 
     }
 
-    void AddDirichletNode(int voxelIndex, List<float> value) {
+    public void AddDirichletNode(int voxelIndex, List<float> value) {
         mesh.voxels[voxelIndex].isDirichlet = true;
 
         //TODO: check this pass by ref?
@@ -245,150 +262,157 @@ public class Microenvironment {
 
     }
 
-    void RemoveDirichletNode(int voxelIndex) {
+    public void RemoveDirichletNode(int voxelIndex) {
         mesh.voxels[voxelIndex].isDirichlet = false;
     }
 
-    bool IsDirichletNode(int voxelIndex) {
+    public bool IsDirichletNode(int voxelIndex) {
         return mesh.voxels[voxelIndex].isDirichlet;
     }
 
 
-    void SetSubstrateDirichletActivation(int substrateIndex, bool newValue) {
+    public void SetSubstrateDirichletActivation(int substrateIndex, bool newValue) {
         dirichletActivationVector[substrateIndex] = newValue;
     }
 
     //openmp Uses parallelization here
-    void ApplyDirichletConditions() {
+    public void ApplyDirichletConditions() {
+        //parallel.for
         for (int i = 0; i < mesh.voxels.Count; i++) {
             if (mesh.voxels[i].isDirichlet) {
                 for (int j = 0; j < dirichletValueVectors[i].Count; j++) {
                     if (dirichletActivationVector[j])
-                        GetDensityVector(i)[j] = dirichletValueVectors[i][j];
+                        densityVectors[i][j] = dirichletValueVectors[i][j];   
                 }
             }
         }
     }
 
 
-    void ResizeSpaceRest() {
-        for (int k = 0; k < mesh.voxels.Count; k++) {
-            temporaryDensityVectors1[k] = new List<float>(zero);
-            temporaryDensityVectors2[k] = new List<float>(zero);
 
-            gradientVectors[k] = new List<List<float>>();
+    void ResizeVoxels(int newNumberOfVoxels){
+    
+        mesh.voxels.Resize(newNumberOfVoxels);
+        densityVectors.Resize(GetNumberOfVoxels(), zero);
+
+        gradientVectors.Resize(GetNumberOfVoxels());
+
+        for (int k = 0; k < GetNumberOfVoxels(); k++) {
+            gradientVectors[k].Resize(GetNumberOfDensities());
             for (int i = 0; i < GetNumberOfDensities(); i++) {
-                gradientVectors[k][i] = new List<float>();
-                gradientVectors[k][i].Add(0);
-                gradientVectors[k][i].Add(0);
-                gradientVectors[k][i].Add(0);
+                gradientVectors[k][i].Resize(3, 0f);
             }
-
-            gradientVectorComputed.Add(false);
-            dirichletValueVectors[k] = new List<float>(one);
-
-
         }
+        gradientVectorComputed.Resize(GetNumberOfVoxels(), false);
+        dirichletValueVectors.Assign(GetNumberOfVoxels(), one);
     }
-    void ResizeSpace(int xNodes, int yNodes, int zNodes) {
+
+    void ResizeSpaceRest() {
+
+        densityVectors.Assign(GetNumberOfVoxels(), zero);
+        gradientVectors.Resize(GetNumberOfVoxels());
+
+        for (int k = 0; k < GetNumberOfVoxels(); k++) {
+            
+            gradientVectors[k].Resize(GetNumberOfDensities());
+            for (int i = 0; i < GetNumberOfDensities(); i++) {
+                gradientVectors[k][i].Resize(3, 0f);
+            }
+        }
+
+        gradientVectorComputed.Resize(GetNumberOfVoxels(), false);
+        dirichletValueVectors.Assign(GetNumberOfVoxels(), one);
+    }
+
+    public void ResizeSpace(int xNodes, int yNodes, int zNodes) {
         mesh.Resize(xNodes, yNodes, zNodes);
         ResizeSpaceRest();
 
-
     }
 
-    void ResizeSpace(float xStart, float xEnd, float yStart, float yEnd, float zStart, float zEnd, int xNodes, int yNodes, int zNodes) {
+    public void ResizeSpace(float xStart, float xEnd, float yStart, float yEnd, float zStart, float zEnd, int xNodes, int yNodes, int zNodes) {
         mesh.Resize(xStart, xEnd, yStart, yEnd, zStart, zEnd, xNodes, yNodes, zNodes);
         ResizeSpaceRest();
     }
 
 
-
-    void ResizeSpace(float xStart, float xEnd, float yStart, float yEnd, float zStart, float zEnd, float dXNew, float dYNew, float dZNew) {
+    public void ResizeSpace(float xStart, float xEnd, float yStart, float yEnd, float zStart, float zEnd, float dXNew, float dYNew, float dZNew) {
         mesh.Resize(xStart, xEnd, yStart, yEnd, zStart, zEnd, dXNew, dYNew, dZNew);
     }
 
 
-    void ResizeSpaceUniform(float xStart, float xEnd, float yStart, float yEnd, float zStart, float zEnd, float dXNew) {
+    public void ResizeSpaceUniform(float xStart, float xEnd, float yStart, float yEnd, float zStart, float zEnd, float dXNew) {
         ResizeSpace(xStart, xEnd, yStart, yEnd, zStart, zEnd, dXNew, dXNew, dXNew);
     }
 
-    void ResizeDensities(int newSize) {
+    public void ResizeDensities(int newSize) {
+
+        zero.Assign(newSize, 0f);
+        one.Assign(newSize, 1f);
+
+        densityVectors.Assign(GetNumberOfVoxels(), zero);
 
 
-        zero = new List<float>();
-        one = new List<float>();
-        for (int j = 0; j < newSize; j++) {
-            zero.Add(0f);
-            one.Add(1f);
+        //TODO: this was missing in the original
+        gradientVectors.Resize(GetNumberOfVoxels());
 
-        }
-        for(int k = 0; k < mesh.voxels.Count; k++) {
-            temporaryDensityVectors1[k] = new List<float>(zero);
-            temporaryDensityVectors2[k] = new List<float>(zero);
+        for (int k = 0; k < GetNumberOfVoxels(); k++) {
 
-            gradientVectors[k] = new List<List<float>>();
+            gradientVectors[k].Resize(GetNumberOfDensities());
+
             for (int i = 0; i < GetNumberOfDensities(); i++) {
-                gradientVectors[k][i] = new List<float>();
-                gradientVectors[k][i].Add(0);
-                gradientVectors[k][i].Add(0);
-                gradientVectors[k][i].Add(0);
+                gradientVectors[k][i].Resize(3, 0.0f);
             }
 
-            gradientVectorComputed.Add(false);
-
-            dirichletValueVectors[k] = new List<float>(one);
-
-
         }
 
-        for(int j = 0; j < newSize; j++) {
-            densityNames.Add("unnamed");
-            densityUnits.Add("none");
-            diffusionCoefficients.Add(0);
-            decayRates.Add(0);
-            dirichletActivationVector.Add(true);
-            dirichletConditionVector.Add(1f);
-            dirichletActivationVector.Add(true);
-        }
+        gradientVectorComputed.Resize(GetNumberOfVoxels(), false);
+
+        diffusionCoefficients.Assign(newSize, 0f);
+        decayRates.Assign(newSize, 0f);
+
+
+        densityNames.Assign(newSize, "unnamed");
+        densityUnits.Assign(newSize, "none");
+
+        dirichletValueVectors.Assign(GetNumberOfVoxels(), one);
+        dirichletActivationVector.Assign(newSize, true);
+
+        microenvironmentOptions.dirichletConditionVector.Assign(newSize, 1f);
+        microenvironmentOptions.dirichletActivationVector.Assign(newSize, true);
+
     }
-
 
 
     void AddDensityRest() {
 
+        //update 1, 0
         zero.Add(0f);
         one.Add(1f);
 
-        for(int i = 0; i < temporaryDensityVectors1.Count; i++) {
-            temporaryDensityVectors1[i].Add(0f);
-            temporaryDensityVectors2[i].Add(0f);
+        for(int i = 0; i < densityVectors.Count; i++) {
+            densityVectors[i].Add(0f);  
         }
 
-        for (int k = 0; k < mesh.voxels.Count; k++){
+
+        for (int k = 0; k < mesh.voxels.Count; k++) {
+            gradientVectors[k].Resize(GetNumberOfDensities());
             for (int i = 0; i < GetNumberOfDensities(); i++) {
-                gradientVectors[k][i] = new List<float>();
-                gradientVectors[k][i].Add(0);
-                gradientVectors[k][i].Add(0);
-                gradientVectors[k][i].Add(0);
+                gradientVectors[k][i].Resize(3, 0f);
             }
-
-
-            gradientVectorComputed.Add(false);
-            dirichletValueVectors[k] = new List<float>(one);
-
-
-        }
-        for (int i = 0; i < GetNumberOfDensities(); i++) {
-            dirichletActivationVector.Add(true);
         }
 
-        defaultMicroenvironmentOptions.dirichletConditionVector.Add(1f);
-        defaultMicroenvironmentOptions.dirichletActivationVector.Add(true);        
+        gradientVectorComputed.Resize(GetNumberOfVoxels(), false);
+
+        dirichletValueVectors.Assign(GetNumberOfVoxels(), one);
+        dirichletActivationVector.Assign(GetNumberOfDensities(), true);
+
+        microenvironmentOptions.dirichletConditionVector.Add(1f);
+        microenvironmentOptions.dirichletActivationVector.Add(true);
 
     }
 
-    void AddDensity(){
+    public void AddDensity(){
 
         densityNames.Add("unnamed");
         densityUnits.Add("none");
@@ -401,7 +425,7 @@ public class Microenvironment {
     }
 
 
-    void AddDensity(string dName, string units) {
+    public void AddDensity(string dName, string units) {
         densityNames.Add(dName);
         densityUnits.Add(units);
 
@@ -411,7 +435,7 @@ public class Microenvironment {
         AddDensityRest();
     }
 
-    void AddDensity(string dName, string units, float diffusionConstant, float decayRate) {
+    public void AddDensity(string dName, string units, float diffusionConstant, float decayRate) {
         densityNames.Add(dName);
         densityUnits.Add(units);
 
@@ -421,7 +445,7 @@ public class Microenvironment {
         AddDensityRest();
     }
 
-    int FindDensityIndex(string dName){
+    public int FindDensityIndex(string dName){
 
         int val = -1;
         for (int i = 0; i < densityNames.Count; i++)
@@ -433,95 +457,99 @@ public class Microenvironment {
 
 
 
-    void SetDensity(int index, string dName, string units){
+    public void SetDensity(int index, string dName, string units){
         if (index == 0)
-            defaultMicroenvironmentOptions.useOxygenAsFirstField = false;
+            microenvironmentOptions.useOxygenAsFirstField = false;
 
         densityNames[index] = dName;
         densityUnits[index] = units;
     }
 
-    void SetDensity(int index, string dName, string units, float diffusionConstant, float decayRate) {
+    public void SetDensity(int index, string dName, string units, float diffusionConstant, float decayRate) {
         SetDensity(index, dName, units);
         diffusionCoefficients[index] = diffusionConstant;
         decayRates[index] = decayRate;
     }
 
-    int GetNumberOfDensities(){
+    public int GetNumberOfDensities(){
         return densityVectors[0].Count;
     }
 
-    int GetVoxelIndex(int i, int j, int k){
+    public int GetVoxelIndex(int i, int j, int k){
         return mesh.GetVoxelIndex(i, j, k);
     }
 
-    int[] GetCartesianIndices(int n) {
+    public int[] GetCartesianIndices(int n) {
         return mesh.GetCartesianIndices(n);
     }
 
-    int GetNearestVoxelIndex(Vector3 pos){
+    public int GetNearestVoxelIndex(Vector3 pos){
         return mesh.GetNearestVoxelIndex(pos);
     }
 
-    Voxel GetVoxel(int voxelIndex){
+    public Voxel GetVoxel(int voxelIndex){
         return mesh.voxels[voxelIndex];
     }
 
-    int [] GetNearestCartesianIndices(Vector3 pos){
+    public int [] GetNearestCartesianIndices(Vector3 pos){
         return mesh.GetNearestCartesianIndices(pos);
     }
 
-    Voxel GetNearestVoxel(Vector3 pos){
+    public Voxel GetNearestVoxel(Vector3 pos){
         return mesh.GetNearestVoxel(pos);
     }
 
-    List<float> GetDensityVector(int i, int j, int k){
+    public List<float> GetDensityVector(int i, int j, int k){
         return densityVectors[GetVoxelIndex(i, j, k)];        
     }
 	
 
-    List<float> GetDensityVector(int i, int j) {
+    public List<float> GetDensityVector(int i, int j) {
         return densityVectors[GetVoxelIndex(i, j, 0)];
     }
 
-    List<float> GetDensityVector(int n) {
+    public List<float> GetDensityVector(int n) {
         return densityVectors[n];
     }
 
-    List<float> GetNearestDensityVector(int voxelIndex) {
+    public List<float> GetNearestDensityVector(int voxelIndex) {
         return densityVectors[voxelIndex];
     }
-    List<float> GetNearestDensityVector(Vector3 pos) {
+    public List<float> GetNearestDensityVector(Vector3 pos) {
         return densityVectors[mesh.GetNearestVoxelIndex(pos)];
     }
 
 
+    public int GetNumberOfVoxels(){
+
+        return mesh.voxels.Count;
+    }
+
     //TODO: will be filled in
-    void SimulateDiffusionDecay(float deltaTime){
+    public void SimulateDiffusionDecay(float deltaTime){
         
     }
 
-
-    void SimulateSourceAndSink(float deltaTime, List<float> supplyRatesVal, List<float>supplyTargetDensitiesVal, List<float>uptakeRatesVal){
+    //TODO: ?????
+    public void SimulateSourceAndSink(float deltaTime, List<float> supplyRatesVal, List<float>supplyTargetDensitiesVal, List<float>uptakeRatesVal){
+        
         if(!bulkSourceAndSinkSolverSetupDone){
-            for (int i = 0; i < mesh.voxels.Count; i++){
-                bulkSourceAndSinkSolverTemp1[i] = new List<float>(zero);
-
-
-                bulkSourceAndSinkSolverTemp2[i] = new List<float>(zero);
-
-                bulkSourceAndSinkSolverTemp3[i] = new List<float>(zero);
-
-            }
+            bulkSourceAndSinkSolverTemp1.Resize(GetNumberOfVoxels(), zero);
+            bulkSourceAndSinkSolverTemp2.Resize(GetNumberOfVoxels(), zero);
+            bulkSourceAndSinkSolverTemp3.Resize(GetNumberOfVoxels(), zero);
             bulkSourceAndSinkSolverSetupDone = true;
         }
 
-        //TODO make these functions
-        for (int i = 0; i < mesh.voxels.Count; i++) {
+        //TODO openmp
 
-            bulkSourceAndSinkSolverTemp1[i] = new List<float>(supplyRatesVal);
-            bulkSourceAndSinkSolverTemp2[i] = new List<float>(supplyTargetDensitiesVal);
-            bulkSourceAndSinkSolverTemp3[i] = new List<float>(uptakeRatesVal);
+
+        //TODO: not a match with the original function
+        bulkSourceAndSinkSolverTemp1.Resize(GetNumberOfVoxels(), supplyRatesVal);
+        bulkSourceAndSinkSolverTemp2.Resize(GetNumberOfVoxels(), supplyTargetDensitiesVal);
+        bulkSourceAndSinkSolverTemp3.Resize(GetNumberOfVoxels(), uptakeRatesVal);
+
+
+        for (int i = 0; i < GetNumberOfVoxels(); i++) {            
 
             for (int j = 0; j < bulkSourceAndSinkSolverTemp1[i].Count; j++) // temp2 = S*T
                 bulkSourceAndSinkSolverTemp2[i][j] *= bulkSourceAndSinkSolverTemp1[i][j];
@@ -537,31 +565,27 @@ public class Microenvironment {
 
             for (int j = 0; j < densityVectors[i].Count; j++) 
                 densityVectors[i][j] /= bulkSourceAndSinkSolverTemp3[i][j];
-
         }
-
     }
 
 
-    void UpdateRates(List<float> supplyRatesVal, List<float> supplyTargetDensitiesTimesSupplyRatesVal, List<float> uptakeRatesVal) {
+    public void UpdateRates(List<float> supplyRatesVal, List<float> supplyTargetDensitiesTimesSupplyRatesVal, List<float> uptakeRatesVal) {
         if (supplyTargetDensitiesTimesSupplyRates.Count != mesh.voxels.Count) {
-            for (int i = 0; i < mesh.voxels.Count; i++)
-                supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(zero);
+            supplyTargetDensitiesTimesSupplyRates.Assign(GetNumberOfVoxels(), zero);
         }
 
         if (supplyRates.Count != mesh.voxels.Count) {
-            for (int i = 0; i < mesh.voxels.Count; i++)
-                supplyRates[i] = new List<float>(zero);
+            supplyRates.Assign(GetNumberOfVoxels(), zero);
+
         }
 
         if (uptakeRates.Count != mesh.voxels.Count) {
-            for (int i = 0; i < mesh.voxels.Count; i++)
-                uptakeRates[i] = new List<float>(zero);
+            uptakeRates.Assign(GetNumberOfVoxels(), zero);
+
         }
 
-
-
-        for (int i = 0; i < mesh.voxels.Count; i++){
+        //TODO: openmp parallel
+        for (int i = 0; i < GetNumberOfVoxels(); i++){
             uptakeRates[i] = new List<float>(uptakeRatesVal);
             supplyRates[i] = new List<float>(supplyRatesVal);
             supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(supplyTargetDensitiesTimesSupplyRatesVal);
@@ -569,13 +593,11 @@ public class Microenvironment {
             for (int j = 0; j < supplyTargetDensitiesTimesSupplyRates[i].Count; j++)
                 supplyTargetDensitiesTimesSupplyRates[i][j] *= supplyRates[i][j];
         }
-
     }
 
-   
 
     //TODO: should return reference
-    List<List<float>> GetGradientVector(int n) {
+    public List<List<float>> GetGradientVector(int n) {
 
         if (gradientVectorComputed[n] == false)
             ComputeGradientVector(n);
@@ -583,26 +605,25 @@ public class Microenvironment {
         return gradientVectors[n];
     }
 
-    List<List<float>> GetGradientVector(int i, int j, int k) {
+    public List<List<float>> GetGradientVector(int i, int j, int k) {
         int n = GetVoxelIndex(i, j, k);
 
         return GetGradientVector(n);
 
     }
-    List<List<float>> GetGradientVector(int i, int j) {
+    public List<List<float>> GetGradientVector(int i, int j) {
 
         return GetGradientVector(i, j, 0);
     }
 
-    List<List<float>> GetNearestGradientVector(Vector3 pos) {
+    public List<List<float>> GetNearestGradientVector(Vector3 pos) {
 
         int n = GetNearestVoxelIndex(pos);
         return GetGradientVector(n);
     }
 
 
-   
-    void ComputeGradientVector(int n){
+    public void ComputeGradientVector(int n){
         float twoDx = mesh.dX; 
         float twoDy = mesh.dY; 
         float twoDz = mesh.dZ; 
@@ -652,7 +673,7 @@ public class Microenvironment {
     }
 
 
-    void ComputeAllGradientVectors(){
+    public void ComputeAllGradientVectors(){
         float twoDx = mesh.dX;
         float twoDy = mesh.dY;
         float twoDz = mesh.dZ;
@@ -728,18 +749,16 @@ public class Microenvironment {
         
     }
 
-    void ResetAllGradientVectors(){
+    public void ResetAllGradientVectors(){
         for (int k = 0; k < mesh.voxels.Count; k++) {
             for (int i = 0; i < GetNumberOfDensities(); i++) {
-                gradientVectors[k][i] = new List<float>();
-                gradientVectors[k][i].Add(0f);
-                gradientVectors[k][i].Add(0f);
-                gradientVectors[k][i].Add(0f);
+                gradientVectors[k][i].Assign(3, 0f);
             }
 
-            gradientVectorComputed[k] = false;
+
         }
 
+        gradientVectorComputed.Assign(GetNumberOfVoxels(), false);
     }
 	
 

@@ -41,37 +41,37 @@ public class MicroenvironmentOptions{
         dY = 20;
         dZ = 20;
 
-        outerDirichletConditions = false;
-        dirichletConditionVector.Add(38f);
+        //funda outerDirichletConditions = false;
+        outerDirichletConditions = true;
+        dirichletConditionVector.Add(38f); // 5% o2
 
 
-        xRange.Add(50f);
-        xRange.Add(50f);
+        xRange.Add(100f);
+        xRange.Add(100f);
         xRange[0] *= -1f;
 
-        yRange.Add(50f);
-        yRange.Add(50f);
+        yRange.Add(100f);
+        yRange.Add(100f);
         yRange[0] *= -1f;
 
-        zRange.Add(50f);
-        zRange.Add(50f);
+        zRange.Add(100f);
+        zRange.Add(100f);
         zRange[0] *= -1f;
 
-        //TODO: Funda?
-        /*
-         *
-        xRange.Add(500f);
-        xRange.Add(500f);
-        xRange[0] *= -1f;
+        //TODO: Funda
 
-        yRange.Add(500f);
-        yRange.Add(500f);
-        yRange[0] *= -1f;
+        //xRange.Add(500f);
+        //xRange.Add(500f);
+        //xRange[0] *= -1f;
 
-        zRange.Add(500f);
-        zRange.Add(500f);
-        zRange[0] *= -1f;
-*/
+        //yRange.Add(500f);
+        //yRange.Add(500f);
+        //yRange[0] *= -1f;
+
+        //zRange.Add(500f);
+        //zRange.Add(500f);
+        //zRange[0] *= -1f;
+
         calculateGradients = false;
     }
 }
@@ -215,9 +215,6 @@ public class Microenvironment {
         densityNames = new List<string>();
         densityUnits = new List<string>();
 
-
-
-
         name = "unnamed";
         spatialUnits = "none";
         timeUnits = "none";
@@ -275,20 +272,30 @@ public class Microenvironment {
         dirichletActivationVector[substrateIndex] = newValue;
     }
 
-    //openmp Uses parallelization here
+
     public void ApplyDirichletConditions() {
-        //parallel.for
-        for (int i = 0; i < mesh.voxels.Count; i++) {
+        //TODO openmp Uses parallelization here
+        //for (int i = 0; i < mesh.voxels.Count; i++) {
+        //    if (mesh.voxels[i].isDirichlet) {
+        //        for (int j = 0; j < dirichletValueVectors[i].Count; j++) {
+        //            if (dirichletActivationVector[j])
+        //                densityVectors[i][j] = dirichletValueVectors[i][j];   
+        //        }
+        //    }
+        //}
+
+
+        Parallel.For(0, mesh.voxels.Count, i => {
             if (mesh.voxels[i].isDirichlet) {
                 for (int j = 0; j < dirichletValueVectors[i].Count; j++) {
                     if (dirichletActivationVector[j])
-                        densityVectors[i][j] = dirichletValueVectors[i][j];   
+                        densityVectors[i][j] = dirichletValueVectors[i][j];
                 }
             }
-        }
+        });
+
+
     }
-
-
 
     void ResizeVoxels(int newNumberOfVoxels){
     
@@ -378,8 +385,9 @@ public class Microenvironment {
         dirichletValueVectors.Assign(GetNumberOfVoxels(), one);
         dirichletActivationVector.Assign(newSize, true);
 
-        microenvironmentOptions.dirichletConditionVector.Assign(newSize, 1f);
-        microenvironmentOptions.dirichletActivationVector.Assign(newSize, true);
+        //FUNDA closed this?
+        //microenvironmentOptions.dirichletConditionVector.Assign(newSize, 1f);
+        //microenvironmentOptions.dirichletActivationVector.Assign(newSize, true);
 
     }
 
@@ -527,7 +535,7 @@ public class Microenvironment {
 
     //TODO: will be filled in
     public void SimulateDiffusionDecay(float deltaTime){
-        
+        Solvers.DiffusionDecaySolverConstantCoefficientsLOD3D(this, deltaTime);
     }
 
     //TODO: ?????
@@ -585,14 +593,24 @@ public class Microenvironment {
         }
 
         //TODO: openmp parallel
-        for (int i = 0; i < GetNumberOfVoxels(); i++){
+        //for (int i = 0; i < GetNumberOfVoxels(); i++){
+        //    uptakeRates[i] = new List<float>(uptakeRatesVal);
+        //    supplyRates[i] = new List<float>(supplyRatesVal);
+        //    supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(supplyTargetDensitiesTimesSupplyRatesVal);
+
+        //    for (int j = 0; j < supplyTargetDensitiesTimesSupplyRates[i].Count; j++)
+        //        supplyTargetDensitiesTimesSupplyRates[i][j] *= supplyRates[i][j];
+        //}
+
+
+        Parallel.For(0, GetNumberOfVoxels(), i => {
             uptakeRates[i] = new List<float>(uptakeRatesVal);
             supplyRates[i] = new List<float>(supplyRatesVal);
             supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(supplyTargetDensitiesTimesSupplyRatesVal);
 
             for (int j = 0; j < supplyTargetDensitiesTimesSupplyRates[i].Count; j++)
                 supplyTargetDensitiesTimesSupplyRates[i][j] *= supplyRates[i][j];
-        }
+        });
     }
 
 
@@ -687,65 +705,116 @@ public class Microenvironment {
             gradientConstantsDefined = true;
         }
 
-        //TODO: done in parallel with openmp
-        for (int k = 0; k < mesh.zCoordinates.Count; k++) {
-            for (int j = 0; j < mesh.yCoordinates.Count; j++) {
-                for (int i = 0; i < mesh.xCoordinates.Count; i++) {
-                    int n = GetVoxelIndex(i, j, k);
-                    // d/dx 
-                    if (indices[0] > 0 && indices[0] < mesh.xCoordinates.Count - 1) {
-                        for (int q = 0; q < GetNumberOfDensities(); q++) {
-                            gradientVectors[n][q][0] = densityVectors[n + thomasIJump][q];
-                            gradientVectors[n][q][0] -= densityVectors[n - thomasIJump][q];
-                            gradientVectors[n][q][0] /= twoDx;
-                            gradientVectorComputed[n] = true;
-                        }
-                    }
 
+        int xCnt = mesh.xCoordinates.Count;
+        int yCnt = mesh.yCoordinates.Count;
+        int zCnt = mesh.zCoordinates.Count;
+        int totalCnt = xCnt * yCnt * zCnt;
+
+
+        //n is the voxel index
+        Parallel.For(0, totalCnt, n => {
+            // d/dx 
+            if (indices[0] > 0 && indices[0] < mesh.xCoordinates.Count - 1) {
+                for (int q = 0; q < GetNumberOfDensities(); q++) {
+                    gradientVectors[n][q][0] = densityVectors[n + thomasIJump][q];
+                    gradientVectors[n][q][0] -= densityVectors[n - thomasIJump][q];
+                    gradientVectors[n][q][0] /= twoDx;
+                    gradientVectorComputed[n] = true;
                 }
-
             }
-        }
+   
+        });
 
-        //TODO: done in parallel with openmp
-        for (int k = 0; k < mesh.zCoordinates.Count; k++) {
-            for (int j = 0; j < mesh.yCoordinates.Count; j++) {
-                for (int i = 0; i < mesh.xCoordinates.Count; i++) {
-                    int n = GetVoxelIndex(i, j, k);
-                    // d/dy 
-                    if (indices[1] > 0 && indices[1] < mesh.yCoordinates.Count - 1) {
-                        for (int q = 0; q < GetNumberOfDensities(); q++) {
-                            gradientVectors[n][q][1] = densityVectors[n + thomasJJump][q];
-                            gradientVectors[n][q][1] -= densityVectors[n - thomasJJump][q];
-                            gradientVectors[n][q][1] /= twoDy;
-                            gradientVectorComputed[n] = true;
-                        }
-                    }
+        ////TODO: done in parallel with openmp
+        //for (int k = 0; k < mesh.zCoordinates.Count; k++) {
+        //    for (int j = 0; j < mesh.yCoordinates.Count; j++) {
+        //        for (int i = 0; i < mesh.xCoordinates.Count; i++) {
+        //            int n = GetVoxelIndex(i, j, k);
+        //            // d/dx 
+        //            if (indices[0] > 0 && indices[0] < mesh.xCoordinates.Count - 1) {
+        //                for (int q = 0; q < GetNumberOfDensities(); q++) {
+        //                    gradientVectors[n][q][0] = densityVectors[n + thomasIJump][q];
+        //                    gradientVectors[n][q][0] -= densityVectors[n - thomasIJump][q];
+        //                    gradientVectors[n][q][0] /= twoDx;
+        //                    gradientVectorComputed[n] = true;
+        //                }
+        //            }
 
+        //        }
+
+        //    }
+        //}
+
+        ////TODO: done in parallel with openmp
+        //for (int k = 0; k < mesh.zCoordinates.Count; k++) {
+        //    for (int j = 0; j < mesh.yCoordinates.Count; j++) {
+        //        for (int i = 0; i < mesh.xCoordinates.Count; i++) {
+        //            int n = GetVoxelIndex(i, j, k);
+        //            // d/dy 
+        //            if (indices[1] > 0 && indices[1] < mesh.yCoordinates.Count - 1) {
+        //                for (int q = 0; q < GetNumberOfDensities(); q++) {
+        //                    gradientVectors[n][q][1] = densityVectors[n + thomasJJump][q];
+        //                    gradientVectors[n][q][1] -= densityVectors[n - thomasJJump][q];
+        //                    gradientVectors[n][q][1] /= twoDy;
+        //                    gradientVectorComputed[n] = true;
+        //                }
+        //            }
+
+        //        }
+
+        //    }
+        //}
+
+        //n is the voxel index
+        Parallel.For(0, totalCnt, n => {
+            // d/dy 
+            if (indices[1] > 0 && indices[1] < mesh.yCoordinates.Count - 1) {
+                for (int q = 0; q < GetNumberOfDensities(); q++) {
+                    gradientVectors[n][q][1] = densityVectors[n + thomasJJump][q];
+                    gradientVectors[n][q][1] -= densityVectors[n - thomasJJump][q];
+                    gradientVectors[n][q][1] /= twoDy;
+                    gradientVectorComputed[n] = true;
                 }
-
             }
-        }
 
-        //TODO: done in parallel with openmp
-        for (int k = 0; k < mesh.zCoordinates.Count; k++) {
-            for (int j = 0; j < mesh.yCoordinates.Count; j++) {
-                for (int i = 0; i < mesh.xCoordinates.Count; i++) {
-                    int n = GetVoxelIndex(i, j, k);
-                    // d/dz 
-                    if (indices[2] > 0 && indices[2] < mesh.zCoordinates.Count - 1) {
-                        for (int q = 0; q < GetNumberOfDensities(); q++) {
-                            gradientVectors[n][q][2] = densityVectors[n + thomasKJump][q];
-                            gradientVectors[n][q][2] -= densityVectors[n - thomasKJump][q];
-                            gradientVectors[n][q][2] /= twoDz;
-                            gradientVectorComputed[n] = true;
-                        }
-                    }
+        });
 
+        ////TODO: done in parallel with openmp
+        //for (int k = 0; k < mesh.zCoordinates.Count; k++) {
+        //    for (int j = 0; j < mesh.yCoordinates.Count; j++) {
+        //        for (int i = 0; i < mesh.xCoordinates.Count; i++) {
+        //            int n = GetVoxelIndex(i, j, k);
+        //            // d/dz 
+        //            if (indices[2] > 0 && indices[2] < mesh.zCoordinates.Count - 1) {
+        //                for (int q = 0; q < GetNumberOfDensities(); q++) {
+        //                    gradientVectors[n][q][2] = densityVectors[n + thomasKJump][q];
+        //                    gradientVectors[n][q][2] -= densityVectors[n - thomasKJump][q];
+        //                    gradientVectors[n][q][2] /= twoDz;
+        //                    gradientVectorComputed[n] = true;
+        //                }
+        //            }
+
+        //        }
+
+        //    }
+        //}
+
+
+        //n is the voxel index
+        Parallel.For(0, totalCnt, n => {
+            // d/dz 
+            if (indices[2] > 0 && indices[2] < mesh.zCoordinates.Count - 1) {
+                for (int q = 0; q < GetNumberOfDensities(); q++) {
+                    gradientVectors[n][q][2] = densityVectors[n + thomasKJump][q];
+                    gradientVectors[n][q][2] -= densityVectors[n - thomasKJump][q];
+                    gradientVectors[n][q][2] /= twoDz;
+                    gradientVectorComputed[n] = true;
                 }
-
             }
-        }
+
+        });
+
         
     }
 

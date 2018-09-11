@@ -390,28 +390,13 @@ public class CartesianMesh {
                     voxels[n].meshIndex = n;
                     voxels[n].volume = dV;
 
-                    Debug.Log(n + " " + voxels[n].center[0] + " " + voxels[n].center[1] + " " + voxels[n].center[2]);
-
-               
                     n++;
                 }
             }
         }
 
 
-                                                                                       
-        Debug.Log("------------------------------------");
-        n = 0;
-        for (int k = 0; k < zCoordinates.Count; k++) {
-            for (int j = 0; j < yCoordinates.Count; j++) {
-                for (int i = 0; i < xCoordinates.Count; i++) {
-                    Debug.Log(n + " " + voxels[n].center[0] + " " + voxels[n].center[1] + " " + voxels[n].center[2]);
-
-                    n++;
-                }
-            }
-        }
-
+                                                                                      
 
 
         // make connections 

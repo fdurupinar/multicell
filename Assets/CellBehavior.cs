@@ -48,6 +48,7 @@ public class CellBehavior : MonoBehaviour {
         randDirection = Utilities.GetRandomVector(0, 1);
         randDirection.Normalize();
 
+
         secretionRates.Resize(0, 0f);
         uptakeRates.Resize(0, 0f);
         saturationDensities.Resize(0, 0f);
@@ -110,7 +111,10 @@ public class CellBehavior : MonoBehaviour {
 
         microenvironment = microenvironmentIn;
 
-        secretionRates.Resize(microenvironment.densityVectors[0].Count, 0f);
+        //FUNDA
+        //secretionRates.Resize(microenvironment.densityVectors[0].Count, 0f); 
+        secretionRates.Resize(microenvironment.densityVectors[0].Count, 10f);
+
         saturationDensities.Resize(microenvironment.densityVectors[0].Count, 0f);
         uptakeRates.Resize(microenvironment.densityVectors[0].Count, 0f);
 
@@ -154,8 +158,6 @@ public class CellBehavior : MonoBehaviour {
             microenvironment.densityVectors[currentVoxelIndex][i] += cellSourceAndSinkSolverTemp1[i];    
             microenvironment.densityVectors[currentVoxelIndex][i] /= cellSourceAndSinkSolverTemp2[i];    
         }
-
-
     }
 
     void FixedUpdate() {
@@ -163,6 +165,8 @@ public class CellBehavior : MonoBehaviour {
             return;
 
         float radius;
+
+        SimulateSecretionAndUptake(Time.deltaTime);
 
         UpdateVoxelIndex();
 
@@ -245,7 +249,9 @@ public class CellBehavior : MonoBehaviour {
     }
 
 
-    //private void OnDrawGizmosSelected() {
+    //private void OnDrawGizmos() {
+
+
     //    Gizmos.color = Color.magenta;
     //    Gizmos.DrawLine(transform.position, transform.position + randDirection* 5);
 

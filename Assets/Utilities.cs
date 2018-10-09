@@ -24,9 +24,6 @@ public static class Utilities {
 		return new Vector3 (GetRandomNumber (min, max), GetRandomNumber (min, max), GetRandomNumber (min, max));
 	}
 
-
-
-
     //    list: List<T> to resize
     //    size: desired new size
     // element: default value to insert
@@ -40,9 +37,38 @@ public static class Utilities {
             if (size > list.Capacity)   // Optimization
                 list.Capacity = size;
 
-            list.AddRange(Enumerable.Repeat(element, size - count));
+                    
+                list.AddRange(Enumerable.Repeat(element, size - count));
         }
     }
+
+    //    list: List<T> to resize
+    //    size: desired new size
+    // element: default value to insert
+    public static void Resize<T>(this List<List<T>> list, int size, List<T> element) {
+        int count = list.Count;
+
+        if (size < count) {
+            list.RemoveRange(size, count - size);
+        }
+        else if (size > count) {
+            if (size > list.Capacity)   // Optimization
+                list.Capacity = size;
+
+
+
+     
+            for (int i = count - 1; i < size; i++){
+                List<T> newElement = new List<T>();
+                element.ForEach(el => newElement.Add(el));
+                list.Add(newElement);
+            }
+                
+
+            //list.AddRange(Enumerable.Repeat(newList, size - count));
+        }
+    }
+
 
     public static void Resize<T>(this List<T> list, int size) where T : new() {
         Resize(list, size, new T());
@@ -56,6 +82,23 @@ public static class Utilities {
         list.Clear();
         list.AddRange(Enumerable.Repeat(element, size));
     }
+
+
+    //    list: List<T> to assign
+    //    size: desired new size
+    // element: default value to replace all elements
+    public static void Assign<T>(this List<List<T>> list, int size, List<T> element = default(List<T>)) {
+        list.Clear();
+      //  list.AddRange(Enumerable.Repeat(element.ToList(), size));
+
+        for (int i = 0; i < size; i++) {
+            List<T> newElement = new List<T>();
+            element.ForEach(el => newElement.Add(el));
+            list.Add(newElement);
+        }
+
+    }
+
 
 }
 

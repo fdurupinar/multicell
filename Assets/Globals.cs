@@ -6,8 +6,11 @@ public static class Globals {
     public static int maxCellCnt = 1000;
     public static bool animateDivision = false;
 
+    public static float timePassedInAnimation = 0f;
 
-	public static float timeConst = 1f; //hour
+
+    //public static float timeConst = 0.1f; //funda
+    public static float timeConst = 1f; //hour
 
 	public static int cellCnt = 1 ;
 
@@ -49,6 +52,11 @@ public static class Globals {
     public static int meshUYFaceIndex = 4;
     public static int meshUZFaceIndex = 5;
 
+    public static int SPHEROID = 0; 
+    public static int BREASTDUCT = 1; 
+
+
+    public static int OXYGEN = 0; //oxygen concentration in density vectors
   
 
 }

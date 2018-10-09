@@ -4,7 +4,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
+//[System.Serializable]
 public class Voxel {
 
     public int meshIndex;
@@ -40,7 +40,7 @@ public class VoxelFace {
     }
 }
 
-[System.Serializable]
+//[System.Serializable]
 public class CartesianMesh {
 
 

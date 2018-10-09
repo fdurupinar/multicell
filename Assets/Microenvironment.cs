@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Threading.Tasks; 
+using System.Linq;
 
-[System.Serializable]
+//[System.Serializable]
 public class MicroenvironmentOptions{
     public Microenvironment microenvironment;
     public string name;
@@ -13,7 +13,7 @@ public class MicroenvironmentOptions{
     public float dX, dY, dZ;
 
     public bool outerDirichletConditions;
-    public List<float> dirichletConditionVector;
+    public List<float> dirichletConditionVector ;
     public List<bool> dirichletActivationVector;
 
     public List<float> xRange;
@@ -37,13 +37,30 @@ public class MicroenvironmentOptions{
         name = "microenvironment";
         timeUnits = "min";
         spatialUnits = "micron";
+        //funda
+        //dX = 20;
+        //dY = 20;
+        //dZ = 20;
+
         dX = 20;
         dY = 20;
         dZ = 20;
+        outerDirichletConditions = false;
 
-        //funda outerDirichletConditions = false;
-        outerDirichletConditions = true;
         dirichletConditionVector.Add(38f); // 5% o2
+
+
+        //xRange.Add(50f);
+        //xRange.Add(50f);
+        //xRange[0] *= -1f;
+
+        //yRange.Add(50f);
+        //yRange.Add(50f);
+        //yRange[0] *= -1f;
+
+        //zRange.Add(50f);
+        //zRange.Add(50f);
+        //zRange[0] *= -1f;
 
 
         xRange.Add(100f);
@@ -72,11 +89,12 @@ public class MicroenvironmentOptions{
         //zRange.Add(500f);
         //zRange[0] *= -1f;
 
-        calculateGradients = false;
+        //calculateGradients = false;
+        calculateGradients = true;
     }
 }
 
-[System.Serializable]
+//[System.Serializable]
 public class Microenvironment {
 
     public string name;
@@ -105,7 +123,9 @@ public class Microenvironment {
 
     public List<List<float>> supplyTargetDensitiesTimesSupplyRates;
     public List<List<float>> supplyRates;
+
     public List<List<float>> uptakeRates;
+    public List<List<float>> supplyTargetDensities;
 
 
     public List<List<float>> thomasTemp1;
@@ -158,7 +178,7 @@ public class Microenvironment {
     public Microenvironment(){
 
 
-        mesh = new CartesianMesh();
+        mesh = new CartesianMesh(); 
         mesh.Resize(1, 1, 1);
 
         zero = new List<float>();
@@ -181,6 +201,7 @@ public class Microenvironment {
 
         supplyTargetDensitiesTimesSupplyRates = new List<List<float>>();
         supplyRates = new List<List<float>>();
+        supplyTargetDensities = new List<List<float>>();
         uptakeRates = new List<List<float>>();
 
         thomasTemp1 = new List<List<float>>();
@@ -204,7 +225,6 @@ public class Microenvironment {
         thomasCZ = new List<List<float>>();
 
         gradientVectors = new List<List<List<float>>>();
-
 
         gradientVectorComputed = new List<bool>();
 
@@ -235,6 +255,7 @@ public class Microenvironment {
         densityUnits.Add("none");
 
 
+
         diffusionCoefficients.Assign(GetNumberOfDensities(), 0f);
         decayRates.Assign(GetNumberOfDensities(), 0f);
 
@@ -255,7 +276,10 @@ public class Microenvironment {
         mesh.voxels[voxelIndex].isDirichlet = true;
 
         //TODO: check this pass by ref?
-        dirichletValueVectors[voxelIndex] = value;
+        //dirichletValueVectors[voxelIndex] = value;
+        for (int i = 0; i < dirichletValueVectors[voxelIndex].Count; i++)
+            dirichletValueVectors[voxelIndex][i] = value[i];
+
 
     }
 
@@ -285,16 +309,15 @@ public class Microenvironment {
         //}
 
 
+        //TODO
         Parallel.For(0, mesh.voxels.Count, i => {
-            if (mesh.voxels[i].isDirichlet) {
+            if (mesh.voxels[i].isDirichlet) {                
                 for (int j = 0; j < dirichletValueVectors[i].Count; j++) {
                     if (dirichletActivationVector[j])
                         densityVectors[i][j] = dirichletValueVectors[i][j];
                 }
             }
         });
-
-
     }
 
     void ResizeVoxels(int newNumberOfVoxels){
@@ -375,8 +398,9 @@ public class Microenvironment {
 
         gradientVectorComputed.Resize(GetNumberOfVoxels(), false);
 
-        diffusionCoefficients.Assign(newSize, 0f);
-        decayRates.Assign(newSize, 0f);
+        //FUNDA????
+//        diffusionCoefficients.Assign(newSize, 0f);
+ //       decayRates.Assign(newSize, 0f);
 
 
         densityNames.Assign(newSize, "unnamed");
@@ -480,7 +504,9 @@ public class Microenvironment {
     }
 
     public int GetNumberOfDensities(){
+        
         return densityVectors[0].Count;
+
     }
 
     public int GetVoxelIndex(int i, int j, int k){
@@ -539,79 +565,99 @@ public class Microenvironment {
     }
 
     //TODO: ?????
-    public void SimulateSourceAndSink(float deltaTime, List<float> supplyRatesVal, List<float>supplyTargetDensitiesVal, List<float>uptakeRatesVal){
-        
-        if(!bulkSourceAndSinkSolverSetupDone){
-            bulkSourceAndSinkSolverTemp1.Resize(GetNumberOfVoxels(), zero);
-            bulkSourceAndSinkSolverTemp2.Resize(GetNumberOfVoxels(), zero);
-            bulkSourceAndSinkSolverTemp3.Resize(GetNumberOfVoxels(), zero);
-            bulkSourceAndSinkSolverSetupDone = true;
-        }
+    public void SimulateBulkSourceAndSink(float deltaTime) {
+
+        //if (!bulkSourceAndSinkSolverSetupDone) {                                      
+        //    bulkSourceAndSinkSolverTemp1.Resize(GetNumberOfVoxels(), zero);
+        //    bulkSourceAndSinkSolverTemp2.Resize(GetNumberOfVoxels(), zero);
+        //    bulkSourceAndSinkSolverTemp3.Resize(GetNumberOfVoxels(), zero);
+        //    bulkSourceAndSinkSolverSetupDone = true;
+        //}
 
         //TODO openmp
 
-
         //TODO: not a match with the original function
-        bulkSourceAndSinkSolverTemp1.Resize(GetNumberOfVoxels(), supplyRatesVal);
-        bulkSourceAndSinkSolverTemp2.Resize(GetNumberOfVoxels(), supplyTargetDensitiesVal);
-        bulkSourceAndSinkSolverTemp3.Resize(GetNumberOfVoxels(), uptakeRatesVal);
+
+        //for (int i = 0; i < GetNumberOfVoxels(); i++) {
+        //Parallel.For(0, GetNumberOfVoxels(), i => {
 
 
-        for (int i = 0; i < GetNumberOfVoxels(); i++) {            
+        //    for (int j = 0; j < supplyRates[i].Count; j++)   //temp1 = S
+        //        bulkSourceAndSinkSolverTemp1[i][j] = supplyRates[i][j];
 
-            for (int j = 0; j < bulkSourceAndSinkSolverTemp1[i].Count; j++) // temp2 = S*T
-                bulkSourceAndSinkSolverTemp2[i][j] *= bulkSourceAndSinkSolverTemp1[i][j];
+        //    for (int j = 0; j < supplyTargetDensities[i].Count; j++) //temp2 = T
+        //        bulkSourceAndSinkSolverTemp2[i][j] = supplyTargetDensities[i][j];
 
-            for (int j = 0; j < bulkSourceAndSinkSolverTemp2[i].Count; j++) // out = out + dt*temp2 = out + dt*S*T
-                densityVectors[i][j] += deltaTime * bulkSourceAndSinkSolverTemp2[i][j];
+        //    for (int j = 0; j < uptakeRates[i].Count; j++)  //temp3 = U
+        //        bulkSourceAndSinkSolverTemp3[i][j] = uptakeRates[i][j];
+        //});
 
-            for (int j = 0; j < bulkSourceAndSinkSolverTemp3[i].Count; j++) { 
-                bulkSourceAndSinkSolverTemp3[i][j] += bulkSourceAndSinkSolverTemp1[i][j];// temp3 = U+S
-                bulkSourceAndSinkSolverTemp3[i][j] *= deltaTime; // temp3 = dt*(U+S)
-                bulkSourceAndSinkSolverTemp3[i][j] += 1f;  //temp3 = 1 + dt * (U + S)
+
+        //p = (p + S * T * dt) / (1 +(U +S) *dt)
+        Parallel.For(0, GetNumberOfVoxels(), i => {
+        ////for (int i = 0; i < GetNumberOfVoxels(); i++) {
+            //why not?
+            for(int j = 0; j < densityVectors[i].Count; j++){                
+                densityVectors[i][j] =(densityVectors[i][j] + supplyRates[i][j] * supplyTargetDensities[i][j] * deltaTime) / (1f + (supplyRates[i][j] + uptakeRates[i][j]) * deltaTime);        
+
             }
 
-            for (int j = 0; j < densityVectors[i].Count; j++) 
-                densityVectors[i][j] /= bulkSourceAndSinkSolverTemp3[i][j];
-        }
-    }
 
 
-    public void UpdateRates(List<float> supplyRatesVal, List<float> supplyTargetDensitiesTimesSupplyRatesVal, List<float> uptakeRatesVal) {
-        if (supplyTargetDensitiesTimesSupplyRates.Count != mesh.voxels.Count) {
-            supplyTargetDensitiesTimesSupplyRates.Assign(GetNumberOfVoxels(), zero);
-        }
+            //for (int j = 0; j < bulkSourceAndSinkSolverTemp1[i].Count; j++) // temp2 = S*T
+            //    bulkSourceAndSinkSolverTemp2[i][j] *= bulkSourceAndSinkSolverTemp1[i][j];
 
-        if (supplyRates.Count != mesh.voxels.Count) {
-            supplyRates.Assign(GetNumberOfVoxels(), zero);
+            //for (int j = 0; j < bulkSourceAndSinkSolverTemp2[i].Count; j++) // out = out + dt*temp2 = out + dt*S*T
+            //    densityVectors[i][j] += deltaTime * bulkSourceAndSinkSolverTemp2[i][j];
 
-        }
+            //for (int j = 0; j < bulkSourceAndSinkSolverTemp3[i].Count; j++) {
+            //    bulkSourceAndSinkSolverTemp3[i][j] += bulkSourceAndSinkSolverTemp1[i][j];// temp3 = U+S
+            //    bulkSourceAndSinkSolverTemp3[i][j] *= deltaTime; // temp3 = dt*(U+S)
+            //    bulkSourceAndSinkSolverTemp3[i][j] += 1f;  //temp3 = 1 + dt * (U + S)
 
-        if (uptakeRates.Count != mesh.voxels.Count) {
-            uptakeRates.Assign(GetNumberOfVoxels(), zero);
+            //    //Debug.Log(bulkSourceAndSinkSolverTemp3[i][j] + " " + bulkSourceAndSinkSolverTemp1[i][j] + " " + bulkSourceAndSinkSolverTemp2[i][j]);
+            //}
 
-        }
-
-        //TODO: openmp parallel
-        //for (int i = 0; i < GetNumberOfVoxels(); i++){
-        //    uptakeRates[i] = new List<float>(uptakeRatesVal);
-        //    supplyRates[i] = new List<float>(supplyRatesVal);
-        //    supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(supplyTargetDensitiesTimesSupplyRatesVal);
-
-        //    for (int j = 0; j < supplyTargetDensitiesTimesSupplyRates[i].Count; j++)
-        //        supplyTargetDensitiesTimesSupplyRates[i][j] *= supplyRates[i][j];
-        //}
-
-
-        Parallel.For(0, GetNumberOfVoxels(), i => {
-            uptakeRates[i] = new List<float>(uptakeRatesVal);
-            supplyRates[i] = new List<float>(supplyRatesVal);
-            supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(supplyTargetDensitiesTimesSupplyRatesVal);
-
-            for (int j = 0; j < supplyTargetDensitiesTimesSupplyRates[i].Count; j++)
-                supplyTargetDensitiesTimesSupplyRates[i][j] *= supplyRates[i][j];
+            //for (int j = 0; j < densityVectors[i].Count; j++)
+                //densityVectors[i][j] /= bulkSourceAndSinkSolverTemp3[i][j];
         });
+         
     }
+
+
+    //public void UpdateBulkRates(List<float> supplyRatesVal, List<float> supplyTargetDensitiesTimesSupplyRatesVal, List<float> uptakeRatesVal) {
+    //    if (supplyTargetDensitiesTimesSupplyRates.Count != mesh.voxels.Count) {
+    //        supplyTargetDensitiesTimesSupplyRates.Assign(GetNumberOfVoxels(), zero);
+    //    }
+
+    //    if (supplyRates.Count != mesh.voxels.Count) {
+    //        supplyRates.Assign(GetNumberOfVoxels(), zero);
+    //    }
+
+    //    if (uptakeRates.Count != mesh.voxels.Count) {
+    //        uptakeRates.Assign(GetNumberOfVoxels(), zero);
+    //    }
+
+    //    //TODO: openmp parallel
+    //    //for (int i = 0; i < GetNumberOfVoxels(); i++){
+    //    //    uptakeRates[i] = new List<float>(uptakeRatesVal);
+    //    //    supplyRates[i] = new List<float>(supplyRatesVal);
+    //    //    supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(supplyTargetDensitiesTimesSupplyRatesVal);
+
+    //    //    for (int j = 0; j < supplyTargetDensitiesTimesSupplyRates[i].Count; j++)
+    //    //        supplyTargetDensitiesTimesSupplyRates[i][j] *= supplyRates[i][j];
+    //    //}
+
+
+    //    Parallel.For(0, GetNumberOfVoxels(), i => {
+    //        uptakeRates[i] = new List<float>(uptakeRatesVal);
+    //        supplyRates[i] = new List<float>(supplyRatesVal);
+    //        supplyTargetDensitiesTimesSupplyRates[i] = new List<float>(supplyTargetDensitiesTimesSupplyRatesVal);
+
+    //        for (int j = 0; j < supplyTargetDensitiesTimesSupplyRates[i].Count; j++)
+    //            supplyTargetDensitiesTimesSupplyRates[i][j] *= supplyRates[i][j];
+    //    });
+    //}
 
 
     //TODO: should return reference

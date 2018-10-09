@@ -83,9 +83,7 @@ public class Volume {
     }
 
 
-
     public float GetNuclearRadius() {
-
 
         const float coef = 0.23873241463f;
 

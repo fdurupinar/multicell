@@ -2,7 +2,6 @@
 
 using UnityEngine;
 
-[System.Serializable]
 public class CellMechanics {
 
     public Vector3 orientation;
@@ -31,7 +30,6 @@ public class CellMechanics {
 
 
     public CellMechanics() {
-        
         cellCellAdhesionStrength = 0.4f * 60f / Globals.timeConst;
         cellBMAdhesionStrength = 4.0f * 60f / Globals.timeConst;
         relativeMaxAdhesionDistance = 1.25f;
@@ -42,6 +40,7 @@ public class CellMechanics {
         migrationBiasDirection = Vector3.zero;
         migrationBias = 0f;
         motilityVector = Vector3.zero;
+
 
     }
 

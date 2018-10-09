@@ -51,8 +51,17 @@ public class CellCycle {
 
     public float elapsedTimeInPhase = 0;
 
+    public bool isDivisionPhase = false;
+
 
     public CellCycle() {
+
+        this.InitParams();
+    }
+
+    public void InitParams(){
+
+        isDivisionPhase = false;
 
         elapsedTimeInPhase = 0;
 
@@ -63,6 +72,9 @@ public class CellCycle {
         for (int i = 0; i < 10; i++)
             transitionRates[i] = new PhaseLink[10];
 
+    }
+    public void SetPhenotype(CellPhenotype pt){
+        this.phenotype = pt;
     }
 
     public void AddPhase(PhaseT phase) {
@@ -100,7 +112,7 @@ public class CellCycle {
     public int ExitPhase(int phaseInd) {
 
         PhaseT phase = GetPhaseByInd(phaseInd);
-        int nextPhaseInd = 0;
+        int nextPhaseInd = currentPhaseInd; //do not change phase otherwise
 
         if (phase.name.Equals(Globals.A)) {
             nextPhaseInd = GetPhaseByName(Globals.D).ind;
@@ -124,6 +136,11 @@ public class CellCycle {
         return nextPhaseInd;
     }
 
+
+    public void UpdateTransitionRateForCurrentPhase(float newRate) {
+        transitionRates[currentPhaseInd][GetNextPhase().ind].transitionRate = newRate;
+    }
+
     public void Advance(float deltaTime) {
         
         elapsedTimeInPhase += deltaTime;
@@ -131,26 +148,32 @@ public class CellCycle {
         int nextPhaseInd = GetNextPhase().ind;
 
         if (transitionRates[currentPhaseInd][nextPhaseInd].fixedDuration) {
-            if (elapsedTimeInPhase >= transitionRates[currentPhaseInd][nextPhaseInd].transitionRate) {
-                currentPhaseInd = ExitPhase(currentPhaseInd);
-                EnterPhase(currentPhaseInd);
+            if (elapsedTimeInPhase >= 1f/transitionRates[currentPhaseInd][nextPhaseInd].transitionRate) {
+                MoveToNextPhase();
             }
         }
-        else 
-        {
+        else { //stochastic
             float rate = transitionRates[currentPhaseInd][nextPhaseInd].transitionRate * deltaTime;
-            if (rate > 0) {
+
+            if (rate > 0) { 
                 float randVal = Utilities.GetRandomNumber(0f, 1f);
                 if (randVal <= rate) {
-                    currentPhaseInd = ExitPhase(currentPhaseInd);
-                    EnterPhase(currentPhaseInd);
+                    MoveToNextPhase();
+
                 }
-
-            }
-
+            }          
         }
-
     }
+
+    public void MoveToNextPhase(){
+        if (GetCurrentPhase().name.Equals(Globals.M) || GetCurrentPhase().name.Equals(Globals.Ki67PosPreMitotic)) //we are moving out of mitosis -- time to create the clone
+            this.isDivisionPhase = true;
+            
+        currentPhaseInd = ExitPhase(currentPhaseInd); //current is now the next        
+
+        EnterPhase(currentPhaseInd);
+    }
+
 
     public virtual void EnterPhase(int phaseInd) {
         return;
@@ -158,46 +181,18 @@ public class CellCycle {
 }
 
 
-[System.Serializable]
-public class TestDivisionCycle : CellCycle {
-
-    public TestDivisionCycle() {
-        float transitionRateDivision = 0.432f / Globals.timeConst;
-
-        AddPhase(new PhaseT(0, Globals.G1, 1, Color.Lerp(Color.yellow, Color.white, 0.7f)));
-        AddPhase(new PhaseT(1, Globals.M, 0, Color.Lerp(Color.green, Color.white, 0.7f)));
-
-        AddTransitionRate(Globals.G1, Globals.M, transitionRateDivision, false);
-        AddTransitionRate(Globals.M, Globals.G1, 0, true);
-    }
-
-}
 
 
-[System.Serializable]
-public class LiveCells : CellCycle {
-
-    public LiveCells() {        
-        float transitionRateDivision = 0.0432f / Globals.timeConst;
-
-        AddPhase(new PhaseT(0, Globals.G1, 1, Color.Lerp(Color.yellow, Color.white, 0.7f)));
-        AddPhase(new PhaseT(1, Globals.M, 0, Color.Lerp(Color.green, Color.white, 0.7f)));
-
-        AddTransitionRate(Globals.G1, Globals.M, transitionRateDivision, false);
-        AddTransitionRate(Globals.M, Globals.G1, 0, true);
-    }
-
-}
 
 [System.Serializable]
 public class ApoptosisModel : CellCycle {
 
-    public ApoptosisModel(CellPhenotype phenotype) {
-        
+    public ApoptosisModel(CellPhenotype phenotype) : base(){
+        base.InitParams();
         base.phenotype = phenotype;
 
         //divided by 1 as it is fixed rate
-        float transitionRateApoptosis = 8.6f * Globals.timeConst ;
+        float transitionRateApoptosis = 1f /(8.6f * Globals.timeConst) ;
                
         AddPhase(new PhaseT(0, Globals.A, 1, Color.red));
         AddPhase(new PhaseT(1, Globals.D, 1, Color.green));
@@ -208,7 +203,7 @@ public class ApoptosisModel : CellCycle {
     public override void EnterPhase(int phaseInd){
         PhaseT phase = GetPhaseByInd(phaseInd);
         if (phase.name.Equals(Globals.A)) {
-            
+            base.phenotype.isDying = true;
             //update volume constants
             base.phenotype.volume.rFluid = 3f / Globals.timeConst;
             base.phenotype.volume.rCytoplasmic = 1f / Globals.timeConst;
@@ -230,16 +225,23 @@ public class ApoptosisModel : CellCycle {
 [System.Serializable]
 public class NecrosisModel : CellCycle {
 
-    public NecrosisModel(CellPhenotype phenotype) {
-
+    public NecrosisModel(CellPhenotype phenotype): base() {
+        base.InitParams();
         base.phenotype = phenotype;
 
         //divided by 1 as it is fixed rate
         float transitionRateNecrosis0 = float.MaxValue;// set high so it's always evaluating against the "arrest" 
-        float transitionRateNecrosis1 = 24f * 60f * Globals.timeConst;// 60 days max
-        AddPhase(new PhaseT(0, Globals.NS, 1, Color.red));
-        AddPhase(new PhaseT(1, Globals.NL, 1, Color.green));
 
+        float transitionRateNecrosis1 = 1f/(24f * 60f * Globals.timeConst);// 60 days max
+
+
+        AddPhase(new PhaseT(0, Globals.G0, 1, Color.red)); //could be any state
+
+        AddPhase(new PhaseT(1, Globals.NS, 2, new Color(0.5f,0.5f,0.5f)));
+        AddPhase(new PhaseT(2, Globals.NL, 3, new Color(0.2f, 0.2f, 0.2f)));
+        AddPhase(new PhaseT(3, Globals.D, 3, Color.black));
+
+        AddTransitionRate(Globals.G0, Globals.NS, -1, false); //not fixed rate, depends on the current conditions
         AddTransitionRate(Globals.NS, Globals.NL, transitionRateNecrosis0, false);
         AddTransitionRate(Globals.NL, Globals.D,  transitionRateNecrosis1, true);
 
@@ -248,7 +250,8 @@ public class NecrosisModel : CellCycle {
     public override void EnterPhase(int phaseInd) {
         PhaseT phase = GetPhaseByInd(phaseInd);
         if (phase.name.Equals(Globals.NS)) { //standard necrosis entry
-
+            Debug.Log("dying");
+            base.phenotype.isDying = true;
             //update volume constants
             base.phenotype.volume.rFluid = 0.67f / Globals.timeConst;  //unlysed
             base.phenotype.volume.rCytoplasmic = 0.0032f / Globals.timeConst;
@@ -263,7 +266,8 @@ public class NecrosisModel : CellCycle {
             base.phenotype.calcificationRate = 0.0042f;
         }
         else if (phase.name.Equals(Globals.NL)) { //standard lysis entry
-
+            Debug.Log("lysis has started");
+            base.phenotype.isDying = true;
             //update volume constants
             base.phenotype.volume.rFluid = 0.05f / Globals.timeConst; //lysed
             base.phenotype.volume.rCytoplasmic = 0.0032f / Globals.timeConst;
@@ -278,9 +282,6 @@ public class NecrosisModel : CellCycle {
             base.phenotype.calcificationRate = 0.0042f;
         }
 
-
-
-
     }
 }
 
@@ -288,24 +289,21 @@ public class NecrosisModel : CellCycle {
 [System.Serializable]
 public class FlowCytometry : CellCycle {
 
-    public FlowCytometry(CellPhenotype phenotype) {
-
+    public FlowCytometry(CellPhenotype phenotype): base() {
+        base.InitParams();
         base.phenotype = phenotype;
 
-        float G1SRate = 0.00335f / Globals.timeConst;
-        float SMRate = 0.00208f / Globals.timeConst;
-        float MG1Rate = 0.00333f / Globals.timeConst;
+        float G1SRate = (0.00324f* 60f) / Globals.timeConst;
+        float SMRate = (0.00208f* 60f) / Globals.timeConst;
+        float MG1Rate = (0.00333f*60f) / Globals.timeConst;
 
         AddPhase(new PhaseT(0, Globals.G1, 1, Color.red));
         AddPhase(new PhaseT(1, Globals.S, 2, Color.green));
         AddPhase(new PhaseT(2, Globals.M, 0, Color.blue));
 
-
         AddTransitionRate(Globals.G1, Globals.S, G1SRate, false);
         AddTransitionRate(Globals.S, Globals.M, SMRate, false);
         AddTransitionRate(Globals.M, Globals.G1, MG1Rate, false);
-
-
     }
 
     public override void EnterPhase(int phaseInd) {
@@ -320,34 +318,28 @@ public class FlowCytometry : CellCycle {
 [System.Serializable]
 public class Ki67Advanced : CellCycle {
 
-    public Ki67Advanced(CellPhenotype phenotype) {
+    public Ki67Advanced(CellPhenotype phenotype): base() {
+        
+        base.InitParams();
 
         base.phenotype = phenotype;
 
-        float rate01 = 0.276234f / Globals.timeConst;
-        float rate12 = 13 * Globals.timeConst;
-        float rate23 = 0.00333f / Globals.timeConst;
-        float rate30 = 2.5f * Globals.timeConst;
+        float rate01 = 1f/( 3.62f * Globals.timeConst);
+        float rate12 = 1f /(13f * Globals.timeConst);
+        float rate20 = 1f/(2.5f * Globals.timeConst);
 
-        AddPhase(new PhaseT(0, Globals.Ki67Neg, 1, Color.red));
-        AddPhase(new PhaseT(1, Globals.Ki67PosPreMitotic, 2, Color.green));
-        AddPhase(new PhaseT(2, Globals.M, 3, Color.blue));
+        AddPhase(new PhaseT(0, Globals.Ki67Neg, 1, Color.cyan));
+        AddPhase(new PhaseT(1, Globals.Ki67PosPreMitotic, 2, new Color(1f, 0, 1f)));
         AddPhase(new PhaseT(3, Globals.Ki67PosPostMitotic, 0, Color.blue));
 
-
         AddTransitionRate(Globals.Ki67Neg, Globals.Ki67PosPreMitotic, rate01, false);
-        AddTransitionRate(Globals.Ki67PosPreMitotic, Globals.M, rate12, true);
-        AddTransitionRate(Globals.M, Globals.Ki67PosPostMitotic, rate23, false);
-        AddTransitionRate(Globals.Ki67PosPostMitotic, Globals.Ki67Neg, rate30, true);
-
+        AddTransitionRate(Globals.Ki67PosPreMitotic, Globals.Ki67PosPostMitotic, rate12, true);
+        AddTransitionRate(Globals.Ki67PosPostMitotic, Globals.Ki67Neg, rate20, true);
 
     }
 
     public override void EnterPhase(int phaseInd) {
         PhaseT phase = GetPhaseByInd(phaseInd);
-        if (phase.name.Equals(Globals.S)) {
-            base.phenotype.volume.nuclearSolid *= 2;
-            base.phenotype.volume.cytoplasmicSolid *= 2;
-        }
+      
     }
 }

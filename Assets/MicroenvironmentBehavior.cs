@@ -40,8 +40,8 @@ public class MicroenvironmentBehavior : MonoBehaviour {
 
         if (defaultMicroenvironmentOptions.useOxygenAsFirstField) {
             microenvironment.SetDensity(0, "oxygen", "mmHg");
-            microenvironment.diffusionCoefficients[0] = 100000f;
-            microenvironment.decayRates[0] = 0.1f;//  //100 micron length scale //0.1f; 
+            microenvironment.diffusionCoefficients[0] = Globals.oxygenDiffusionCoefficient;
+            microenvironment.decayRates[0] = Globals.oxygenDecayRate;//  //100 micron length scale //0.1f; 
         }
 
 
@@ -84,6 +84,7 @@ public class MicroenvironmentBehavior : MonoBehaviour {
         }
 
         if (defaultMicroenvironmentOptions.outerDirichletConditions) {
+            
             for (int k = 0; k < microenvironment.mesh.zCoordinates.Count; k++) {
                 // set Dirichlet conditions along the 4 outer edges 
                 for (int i = 0; i < microenvironment.mesh.xCoordinates.Count; i++) {
@@ -116,7 +117,8 @@ public class MicroenvironmentBehavior : MonoBehaviour {
         if (Globals.animationRunning) {
 
             Globals.timePassedInAnimation += Time.deltaTime ;
-            winText.text = "Time (hours): " +  Globals.timePassedInAnimation / (Globals.timeConst * Time.deltaTime * 60f);
+            winText.text = "Time (hours): " +  Globals.timePassedInAnimation / (Globals.timeConst * Time.deltaTime * 60f)+"\n";
+            winText.text += "# Cells = " + Globals.cellCnt;
 
             //microenvironment.SimulateBulkSourceAndSink(Time.deltaTime); //not done in physicell
             microenvironment.SimulateDiffusionDecay(Time.deltaTime); 
@@ -146,26 +148,23 @@ public class MicroenvironmentBehavior : MonoBehaviour {
                 Voxel voxel = microenvironment.GetVoxel(i);
                 float voxelSize = Mathf.Pow(voxel.volume, 0.333333f);
 
-                //Draw densities
-                for (int j = 0; j < microenvironment.densityVectors[i].Count; j++) {
-
-
-                    float c = microenvironment.densityVectors[i][j]; /// 50f;
-                    Gizmos.color = Color.Lerp(Color.yellow, Color.blue, c);
-                    Gizmos.color = new Vector4(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.05f); //make it transparent
-
-
-                    Gizmos.DrawCube(voxel.center, new Vector3(voxelSize, voxelSize, voxelSize));
-
-
-                    //Gizmos.color = Color.blue;
-                    //Gizmos.DrawWireCube(voxel.center, new Vector3(voxelSize, voxelSize, voxelSize));
+                //Draw densities for oxygen
 
 
 
-                }
+                float c = microenvironment.densityVectors[i][0] / 38f; /// max 38f; 
+                Gizmos.color = Color.Lerp(Color.yellow, Color.blue, c);
+                Gizmos.color = new Vector4(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.05f); //make it transparent
 
-                //});
+
+                Gizmos.DrawCube(voxel.center, new Vector3(voxelSize, voxelSize, voxelSize));
+
+
+                //Gizmos.color = Color.blue;
+                //Gizmos.DrawWireCube(voxel.center, new Vector3(voxelSize, voxelSize, voxelSize));
+
+
+
             }
 
 

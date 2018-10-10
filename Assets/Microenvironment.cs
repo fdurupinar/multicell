@@ -273,6 +273,7 @@ public class Microenvironment {
     }
 
     public void AddDirichletNode(int voxelIndex, List<float> value) {
+        
         mesh.voxels[voxelIndex].isDirichlet = true;
 
         //TODO: check this pass by ref?
@@ -312,6 +313,7 @@ public class Microenvironment {
         //TODO
         Parallel.For(0, mesh.voxels.Count, i => {
             if (mesh.voxels[i].isDirichlet) {                
+                
                 for (int j = 0; j < dirichletValueVectors[i].Count; j++) {
                     if (dirichletActivationVector[j])
                         densityVectors[i][j] = dirichletValueVectors[i][j];

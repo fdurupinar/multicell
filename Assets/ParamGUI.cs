@@ -30,11 +30,16 @@ public class ParamGUI : MonoBehaviour {
 	}
 
 	void OnGUI () {
-        
-		scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(250), GUILayout.Height(Screen.height * 0.98f));
 
 
+        scrollPosition = GUILayout.BeginScrollView(scrollPosition, GUILayout.Width(Screen.width * 0.4f), GUILayout.Height(Screen.height * 0.98f));
 
+        //GUI.color = Color.Lerp(Color.white, Color.black, 0.5f);
+        GUIStyle headerStyle = new GUIStyle();
+        headerStyle.fontSize = 24;
+        headerStyle.normal.textColor = Color.white;
+
+        GUILayout.Label("Model Parameters", headerStyle);
         //Generate cells
         GUILayout.BeginHorizontal();
 
@@ -52,10 +57,6 @@ public class ParamGUI : MonoBehaviour {
         GUILayout.EndHorizontal();
 
 
-        //Animate division
-        GUILayout.BeginHorizontal();
-        Globals.animateDivision = GUILayout.Toggle(Globals.animateDivision, "Animate division");
-        GUILayout.EndHorizontal();
 
         //Maximum cell count
         GUILayout.BeginHorizontal();
@@ -70,6 +71,16 @@ public class ParamGUI : MonoBehaviour {
             Globals.maxCellCnt = 1000;
         }
         GUILayout.EndHorizontal();
+
+
+        //TIME CONSTANT
+        GUILayout.Label("");
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Time constant (min):");
+        timeConst = float.Parse(GUILayout.TextField(timeConst.ToString(), 5));
+        Globals.timeConst = timeConst;
+        GUILayout.EndHorizontal();
+
      
 
         //Enable/disable mechanics component
@@ -106,7 +117,60 @@ public class ParamGUI : MonoBehaviour {
 
         GUILayout.EndHorizontal();
 
+        GUILayout.Label("");
+        GUILayout.Label("Diffusion parameters", headerStyle);
 
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Cell saturation density");
+        Globals.cellSaturationDensity = float.Parse(GUILayout.TextField(Globals.cellSaturationDensity.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Microenvironment oxygen diffusion coefficient");
+        Globals.oxygenDiffusionCoefficient = float.Parse(GUILayout.TextField(Globals.oxygenDiffusionCoefficient.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Microenvironment oxygen decay rate");
+        Globals.oxygenDecayRate = float.Parse(GUILayout.TextField(Globals.oxygenDecayRate.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Cell oxygen necrosis threshold");
+        Globals.oxygenNecrosisThreshold = float.Parse(GUILayout.TextField(Globals.oxygenNecrosisThreshold.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Cell oxygen necrosis max");
+        Globals.oxygenNecrosisMax = float.Parse(GUILayout.TextField(Globals.oxygenNecrosisMax.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Cell secretion rate");
+        Globals.cellSecretionRate = float.Parse(GUILayout.TextField(Globals.cellSecretionRate.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Cell saturation density");
+        Globals.cellSaturationDensity = float.Parse(GUILayout.TextField(Globals.cellSaturationDensity.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+        GUILayout.BeginHorizontal();
+        GUILayout.Label("Cell uptake rate");
+        Globals.cellUptakeRate = float.Parse(GUILayout.TextField(Globals.cellUptakeRate.ToString(), 25));
+        GUILayout.EndHorizontal();
+
+        GUILayout.Label("");
+
+        GUILayout.Label("Animation", headerStyle);
+
+        //Animate division
+        GUILayout.BeginHorizontal();
+        Globals.animateDivision = GUILayout.Toggle(Globals.animateDivision, "Animate division");
+        GUILayout.EndHorizontal();
+
+        GUILayout.Label("");
         //Start animation
         GUILayout.BeginHorizontal();
 
@@ -124,6 +188,9 @@ public class ParamGUI : MonoBehaviour {
 
         GUILayout.EndHorizontal();
 
+        GUILayout.Label("");
+
+
         //Start animation
         GUILayout.BeginHorizontal();
         if (GUILayout.Button("Save"))
@@ -135,14 +202,7 @@ public class ParamGUI : MonoBehaviour {
         GUILayout.EndHorizontal();
 
 
-
-        //TIME CONSTANT
-        GUILayout.Label("");
-        GUILayout.BeginHorizontal();
-        GUILayout.Label("Time constant (min):");
-        timeConst = float.Parse(GUILayout.TextField(timeConst.ToString(), 5));
-        Globals.timeConst = timeConst;
-        GUILayout.EndHorizontal();
+     
 
 
 		GUILayout.EndScrollView();

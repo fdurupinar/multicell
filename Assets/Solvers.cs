@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Threading.Tasks; 
 using System.Linq;
+using System.Collections.Generic;
 
 public static class Solvers {
 
@@ -19,14 +20,45 @@ public static class Solvers {
         if (!M.diffusionSolverSetupDone) {
             Debug.Log("Using implicit 3-D LOD with Thomas Algorithm)");
 
-            M.thomasDenomX.Resize(xCount, M.zero);
-            M.thomasCX.Resize(xCount, M.zero);
 
-            M.thomasDenomY.Resize(yCount, M.zero);
-            M.thomasCY.Resize(yCount, M.zero);
 
-            M.thomasDenomZ.Resize(zCount, M.zero);
-            M.thomasCZ.Resize(zCount, M.zero);
+            //M.thomasDenomY = new List<List<float>>();
+            //M.thomasCY = new List<List<float>>();
+
+            //for (int i = 0; i < yCount; i++) {
+            //    M.thomasDenomY[i] = new List<float>();
+            //    M.thomasCY[i] = new List<float>();
+            //    for (int j = 0; j < M.zero.Count; j++) {
+            //        M.thomasDenomY[i].Add(0f);
+            //        M.thomasCY[i].Add(0f);
+            //    }
+            //}
+
+
+            //M.thomasDenomZ = new List<List<float>>();
+            //M.thomasCZ = new List<List<float>>();
+
+            //for (int i = 0; i < yCount; i++) {
+            //    M.thomasDenomZ[i] = new List<float>();
+            //    M.thomasCZ[i] = new List<float>();
+            //    for (int j = 0; j < M.zero.Count; j++) {
+            //        M.thomasDenomZ[i].Add(0f);
+            //        M.thomasCZ[i].Add(0f);
+            //    }
+            //}
+
+
+                
+
+
+            //M.thomasDenomX.Assign(xCount, M.zero);
+            //M.thomasCX.Assign(xCount, M.zero);
+
+            //M.thomasDenomY.Assign(yCount, M.zero);
+            //M.thomasCY.Assign(yCount, M.zero);
+
+            //M.thomasDenomZ.Assign(zCount, M.zero);
+            //M.thomasCZ.Assign(zCount, M.zero);
 
             M.thomasIJump = 1;
             M.thomasJJump = xCount;
@@ -40,56 +72,114 @@ public static class Solvers {
             //M.thomasConstant3a = M.one; // 1 + constant1 + constant2;      
 
 
-            M.thomasConstant1 = M.diffusionCoefficients.ToList(); // dt*D/dx^2 
-            M.thomasConstant1a = M.zero.ToList(); // -dt*D/dx^2; 
-            M.thomasConstant2 = M.decayRates.ToList(); // (1/3)* dt*lambda 
+            M.thomasConstant1  = new List<float>();   // dt*D/dx^2 
+            for (int i = 0; i < M.diffusionCoefficients.Count; i++) 
+                M.thomasConstant1.Add(M.diffusionCoefficients[i]);
 
-            M.thomasConstant3 = M.one.ToList(); // 1 + 2*constant1 + constant2; 
-            M.thomasConstant3a = M.one.ToList(); // 1 + constant1 + constant2;      
+            M.thomasConstant1a = new List<float>();  // -dt*D/dx^2; 
+            for (int i = 0; i < M.zero.Count; i++)
+                M.thomasConstant1a.Add(0f);
+
+            M.thomasConstant2 = new List<float>();// (1/3)* dt*lambda 
+            for (int i = 0; i < M.decayRates.Count; i++)
+                M.thomasConstant2.Add(M.decayRates[i]);
+
+            M.thomasConstant3 = new List<float>(); // 1 + 2*constant1 + constant2; 
+            M.thomasConstant3a = new List<float>();// 1 + constant1 + constant2;    
+            for (int i = 0; i < M.one.Count; i++) {
+                M.thomasConstant3.Add(1f);
+                M.thomasConstant3a.Add(1f);
+            }
+                
+    
+            //M.thomasConstant1 = M.diffusionCoefficients.ToList(); // dt*D/dx^2 
+            //M.thomasConstant1a = M.zero.ToList(); // -dt*D/dx^2; 
+
+            //M.thomasConstant2 = M.decayRates.ToList(); // (1/3)* dt*lambda 
+
+            //M.thomasConstant3 = M.one.ToList(); // 1 + 2*constant1 + constant2; 
+            //M.thomasConstant3a = M.one.ToList(); // 1 + constant1 + constant2;      
 
 
-            for (int i = 0; i < M.thomasConstant1.Count; i++) {
+            for (int i = 0; i < M.thomasConstant1.Count; i++) {// dt*D/dx^2 
                 M.thomasConstant1[i] *= dt;
                 M.thomasConstant1[i] /= M.mesh.dX;
                 M.thomasConstant1[i] /= M.mesh.dX;
+
+
+                M.thomasConstant1a[i] = -M.thomasConstant1[i];
+
             }
 
             //TODO: copy by ref?
             //M.thomasConstant1a = M.thomasConstant1;
-            M.thomasConstant1a = M.thomasConstant1.ToList();
+            //M.thomasConstant1a = M.thomasConstant1.ToList();
 
-            for (int i = 0; i < M.thomasConstant1a.Count; i++)
-                M.thomasConstant1a[i] *= -1.0f;
+            //for (int i = 0; i < M.thomasConstant1a.Count; i++)
+                //M.thomasConstant1a[i] *= -1.0f;
 
 
-            for (int i = 0; i < M.thomasConstant2.Count; i++) {
+            for (int i = 0; i < M.thomasConstant2.Count; i++) { // (1/3)* dt*lambda 
                 M.thomasConstant2[i] *= dt;
                 M.thomasConstant2[i] /= 3f; //for the LOD splitting of the source
             }
 
-            for (int i = 0; i < M.thomasConstant3.Count; i++) {
+            for (int i = 0; i < M.thomasConstant3.Count; i++) { // 1 + 2*constant1 + constant2; 
                 M.thomasConstant3[i] += M.thomasConstant1[i];
                 M.thomasConstant3[i] += M.thomasConstant1[i];
                 M.thomasConstant3[i] += M.thomasConstant2[i];
             }
 
-            for (int i = 0; i < M.thomasConstant3a.Count; i++) {
+            for (int i = 0; i < M.thomasConstant3a.Count; i++) { // dt*D/dx^2 
                 M.thomasConstant3a[i] += M.thomasConstant1[i];
                 M.thomasConstant3a[i] += M.thomasConstant2[i];
             }
 
             // Thomas solver coefficients 
 
-            M.thomasCX.Assign(xCount, M.thomasConstant1a);
-            M.thomasDenomX.Assign(xCount, M.thomasConstant3);
-            //M.thomasDenomX[0] = M.thomasConstant3a;
-            //M.thomasDenomX[xCount - 1] = M.thomasConstant3a;
-            M.thomasDenomX[0] = M.thomasConstant3a.ToList();
-            M.thomasDenomX[xCount - 1] = M.thomasConstant3a.ToList();
+
+
+            M.thomasDenomX = new List<List<float>>();
+            M.thomasCX = new List<List<float>>();
+
+            for (int i = 0; i < xCount; i++) {
+               
+                M.thomasCX.Add(new List<float>());
+                for (int j = 0; j < M.thomasConstant1a.Count; j++) {                    
+                    M.thomasCX[i].Add(M.thomasConstant1a[j]);
+                }
+
+                M.thomasDenomX.Add(new List<float>());
+                for (int j = 0; j < M.thomasConstant3.Count; j++) {
+                    M.thomasDenomX[i].Add(M.thomasConstant3[j]);
+                }
+                             
+            }
+            for (int i = 0; i < xCount; i++) {
+                for (int j = 0; j < M.thomasConstant3a.Count; j++) {
+                    M.thomasDenomX[0][j] = M.thomasConstant3a[j];
+                    M.thomasDenomX[xCount - 1][j] = M.thomasConstant3a[j];
+                }
+            }
+
+
+
+            //M.thomasCX.Assign(xCount, M.thomasConstant1a);
+            //M.thomasDenomX.Assign(xCount, M.thomasConstant3);
+
+            ////M.thomasDenomX[0] = M.thomasConstant3a;
+            ////M.thomasDenomX[xCount - 1] = M.thomasConstant3a;
+            //M.thomasDenomX[0] = M.thomasConstant3a.ToList();
+            //M.thomasDenomX[xCount - 1] = M.thomasConstant3a.ToList();
 
             if (xCount == 1) {
                 //M.thomasDenomX[0] = M.one;
-                M.thomasDenomX[0] = M.one.ToList(); 
+                //M.thomasDenomX[0] = M.one.ToList(); 
+
+                for (int j = 0; j < M.one.Count; j++) 
+                    M.thomasDenomX[0][j] = 1f;
+
+
                 for (int i = 0; i < M.thomasDenomX[0].Count; i++)
                     M.thomasDenomX[0][i] += M.thomasConstant2[i];
             }
@@ -100,22 +190,58 @@ public static class Solvers {
                 for (int j = 0; j < M.thomasDenomX[i].Count; j++) {
                     M.thomasDenomX[i][j] += M.thomasConstant1[j] * M.thomasCX[i - 1][j];
                     M.thomasCX[i][j] /= M.thomasDenomX[i][j]; // the value at  size - 1 is not actually used
+
+
                 }
             }
 
 
-            M.thomasCY.Assign(yCount, M.thomasConstant1a);
-            M.thomasDenomY.Assign(yCount, M.thomasConstant3);
-            //M.thomasDenomY[0] = M.thomasConstant3a;
-            M.thomasDenomY[0] = M.thomasConstant3a.ToList();
 
-            //M.thomasDenomY[yCount - 1] = M.thomasConstant3a;
-            M.thomasDenomY[yCount - 1] = M.thomasConstant3a.ToList();
+
+
+            //M.thomasCY.Assign(yCount, M.thomasConstant1a);
+            //M.thomasDenomY.Assign(yCount, M.thomasConstant3);
+            ////M.thomasDenomY[0] = M.thomasConstant3a;
+            //M.thomasDenomY[0] = M.thomasConstant3a.ToList();
+
+            ////M.thomasDenomY[yCount - 1] = M.thomasConstant3a;
+            //M.thomasDenomY[yCount - 1] = M.thomasConstant3a.ToList();
+
+
+
+            M.thomasDenomY = new List<List<float>>();
+            M.thomasCY = new List<List<float>>();
+
+            for (int i = 0; i < yCount; i++) {
+
+                M.thomasCY.Add( new List<float>());
+
+                for (int j = 0; j < M.thomasConstant1a.Count; j++) {
+                    M.thomasCY[i].Add(M.thomasConstant1a[j]);
+                }
+
+                M.thomasDenomY.Add( new List<float>());
+                for (int j = 0; j < M.thomasConstant3.Count; j++) {
+                    M.thomasDenomY[i].Add(M.thomasConstant3[j]);
+                }
+
+            }
+            for (int i = 0; i < yCount; i++) {
+                for (int j = 0; j < M.thomasConstant3a.Count; j++) {
+                    M.thomasDenomY[0][j] = M.thomasConstant3a[j];
+                    M.thomasDenomY[yCount - 1][j] = M.thomasConstant3a[j];
+                }
+            }
+
 
 
             if (yCount == 1) {
                 //M.thomasDenomY[0] = M.one;
-                M.thomasDenomY[0] = M.one.ToList();
+                //M.thomasDenomY[0] = M.one.ToList();
+
+                for (int j = 0; j < M.one.Count; j++)
+                    M.thomasDenomY[0][j] = 1f;
+                
                 for (int i = 0; i < M.thomasDenomY[0].Count; i++)
                     M.thomasDenomY[0][i] += M.thomasConstant2[i];
             }
@@ -126,21 +252,52 @@ public static class Solvers {
                 for (int j = 0; j < M.thomasDenomY[i].Count; j++) {
                     M.thomasDenomY[i][j] += M.thomasConstant1[j] * M.thomasCY[i - 1][j];
                     M.thomasCY[i][j] /= M.thomasDenomY[i][j]; // the value at  size - 1 is not actually used
+
+
                 }
             }
 
 
-            M.thomasCZ.Assign(zCount, M.thomasConstant1a);
-            M.thomasDenomZ.Assign(zCount, M.thomasConstant3);
-            //M.thomasDenomZ[0]=  M.thomasConstant3a;
-            //M.thomasDenomZ[zCount - 1] = M.thomasConstant3a;
-            M.thomasDenomZ[0] =  M.thomasConstant3a.ToList();
-            M.thomasDenomZ[zCount - 1] = M.thomasConstant3a.ToList();
+            //M.thomasCZ.Assign(zCount, M.thomasConstant1a);
+            //M.thomasDenomZ.Assign(zCount, M.thomasConstant3);
+            ////M.thomasDenomZ[0]=  M.thomasConstant3a;
+            ////M.thomasDenomZ[zCount - 1] = M.thomasConstant3a;
+            //M.thomasDenomZ[0] =  M.thomasConstant3a.ToList();
+            //M.thomasDenomZ[zCount - 1] = M.thomasConstant3a.ToList();
+
+            M.thomasDenomZ = new List<List<float>>();
+            M.thomasCZ = new List<List<float>>();
+
+            for (int i = 0; i < zCount; i++) {
+
+                M.thomasCZ.Add(new List<float>());
+                for (int j = 0; j < M.thomasConstant1a.Count; j++) {
+                    M.thomasCZ[i].Add(M.thomasConstant1a[j]);
+                }
+
+                M.thomasDenomZ.Add(new List<float>());
+                for (int j = 0; j < M.thomasConstant3.Count; j++) {
+                    M.thomasDenomZ[i].Add(M.thomasConstant3[j]);
+                }
+
+               
+            }
+
+            for (int i = 0; i < zCount; i++) {
+                for (int j = 0; j < M.thomasConstant3a.Count; j++) {
+                    M.thomasDenomZ[0][j] = M.thomasConstant3a[j];
+                    M.thomasDenomZ[zCount - 1][j] = M.thomasConstant3a[j];
+                }
+            }
 
 
             if (zCount == 1) {
                 //M.thomasDenomZ[0] = M.one;
-                M.thomasDenomZ[0] = M.one.ToList();
+                //M.thomasDenomZ[0] = M.one.ToList();
+
+                for (int j = 0; j < M.one.Count; j++)
+                    M.thomasDenomZ[0][j] = 1f;
+                
                 for (int i = 0; i < M.thomasDenomZ[0].Count; i++)
                     M.thomasDenomZ[0][i] += M.thomasConstant2[i];
             }
@@ -151,12 +308,17 @@ public static class Solvers {
                 for (int j = 0; j < M.thomasDenomZ[i].Count; j++) {
                     M.thomasDenomZ[i][j] += M.thomasConstant1[j] * M.thomasCZ[i - 1][j];
                     M.thomasCZ[i][j] /= M.thomasDenomZ[i][j]; // the value at  size - 1 is not actually used
+
+
                 }
             }
 
             M.diffusionSolverSetupDone = true;
 
         }
+
+
+
 
         // x-diffusion 
 
@@ -222,6 +384,7 @@ public static class Solvers {
                 for (int m = 0; m < M.densityVectors[n].Count; m++) {
                     M.densityVectors[n][m] += M.thomasConstant1[m] * M.densityVectors[n - M.thomasIJump][m];
                     M.densityVectors[n][m] /= M.thomasDenomX[i][m];
+
                 }
 
             }

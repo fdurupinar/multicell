@@ -57,6 +57,16 @@ public static class Globals {
 
 
     public static int OXYGEN = 0; //oxygen concentration in density vectors
+
+
+    //public static float oxygenDiffusionCoefficient = 100000f; //FUNDA????
+    public static float oxygenDiffusionCoefficient = 10f;
+    public static float oxygenDecayRate = 0.1f;
+    public static float oxygenNecrosisThreshold =  5.0f; 
+    public static float oxygenNecrosisMax =  2.5f;
+    public static float cellSecretionRate = 0f;
+    public static float cellSaturationDensity = 38f;
+    public static float cellUptakeRate = 10f;//Value for DCIS 
   
 
 }

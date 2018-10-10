@@ -16,8 +16,8 @@ public class CellBehavior : MonoBehaviour {
     public Ki67Advanced cellCycle;
     public NecrosisModel cellDeath;
 
-    float o2NecrosisThreshold = 5.0f; 
-    float o2NecrosisMax = 2.5f; 
+    float o2NecrosisThreshold = Globals.oxygenNecrosisThreshold;
+    float o2NecrosisMax = Globals.oxygenNecrosisMax; 
 
 
     //float o2HypoxicThreshold = 15.0f; // HIF-1alpha at half-max around 1.5-2%, and tumors often are below 2%
@@ -48,7 +48,7 @@ public class CellBehavior : MonoBehaviour {
     int elongationStepCnt = 0;
     Vector3 randDirection;
 
-    int currentMicroenvironmentVoxelIndex;
+
     int currentVoxelIndex;
 
     bool isActive = true;
@@ -103,46 +103,7 @@ public class CellBehavior : MonoBehaviour {
             currentVoxelIndex = microenvironment.GetNearestVoxelIndex(transform.position);            
         }
     }
-    ///***
-    // * U: vector of uptake(sink) rates
-    // * S: vector of secretion(source) rates
-    // * T: vector of saturation densities
-    // */
-    //void SetInternalUptakeConstants(float dt){
-    //    Microenvironment microenvironment = GameObject.FindWithTag("Microenvironment").GetComponent<MicroenvironmentBehavior>().microenvironment;
-    //    // overall form: dp/dt = S*(T-p) - U*p 
-    //    //   p(n+1) - p(n) = dt*S(n)*T(n) - dt*( S(n) + U(n))*p(n+1)
-    //    //   p(n+1)*temp2 =  p(n) + temp1
-    //    //   p(n+1) = (  p(n) + temp1 )/temp2
-
-    //    //   p(n+1) = ( p(n) + S * T * dt )/( 1+ (S + U) * dt) 
-
-    //    //int nearest_voxel= current_voxel_index;
-    //    //FUNDA 
-    //    //float  internalConstantToDiscretizeTheDeltaApproximation = dt * phenotype.volume.total / ( (microenvironment.GetVoxel(currentVoxelIndex)).volume ) ; // needs a fix 
-    //    float internalConstantToDiscretizeTheDeltaApproximation = 1f;
-
-
-    //    // temp1 = dt*(V_cell/V_voxel)*S*T 
-    //    cellSourceAndSinkSolverTemp1.Assign(secretionRates.Count , 0f );
-
-    //    for (int i = 0; i < cellSourceAndSinkSolverTemp1.Count; i++){
-    //        cellSourceAndSinkSolverTemp1[i] += secretionRates[i]; 
-    //        cellSourceAndSinkSolverTemp1[i] *= saturationDensities[i]; 
-    //        cellSourceAndSinkSolverTemp1[i] *= internalConstantToDiscretizeTheDeltaApproximation; 
-    //    }
-
-    //    // temp2 = 1 + dt*(V_cell/V_voxel)*( S + U )
-    //    cellSourceAndSinkSolverTemp2.Assign( secretionRates.Count , 1f ); 
-    //    for (int i = 0; i < cellSourceAndSinkSolverTemp2.Count; i++) {
-    //        cellSourceAndSinkSolverTemp2[i] += internalConstantToDiscretizeTheDeltaApproximation * secretionRates[i];
-    //        cellSourceAndSinkSolverTemp2[i] += internalConstantToDiscretizeTheDeltaApproximation * uptakeRates[i];
-
-    //    }
-
-    //    volumeIsChanged = false; 
-    //}
-
+  
 
     void RegisterMicroenvironment(){
         
@@ -151,25 +112,12 @@ public class CellBehavior : MonoBehaviour {
 
         //NO oxygen secretion
         // set default uptake and secretion for oncocells
-        secretionRates.Resize(microenvironment.densityVectors[0].Count, 0f);
-        saturationDensities.Resize(microenvironment.densityVectors[0].Count, 38f);
+        secretionRates.Resize(microenvironment.densityVectors[0].Count, Globals.cellSecretionRate);
+        saturationDensities.Resize(microenvironment.densityVectors[0].Count, Globals.cellSaturationDensity);
 
         //uptakeRates.Resize(microenvironment.densityVectors[0].Count, 0.8f);    
-        uptakeRates.Resize(microenvironment.densityVectors[0].Count, 10f); //Value for DCIS    
+        uptakeRates.Resize(microenvironment.densityVectors[0].Count, Globals.cellUptakeRate);    
 
-
-
-        //secretionRates.Resize(microenvironment.densityVectors[0].Count, 10f);
-        //saturationDensities.Resize(microenvironment.densityVectors[0].Count, 1f);
-        //    //uptakeRates.Resize(microenvironment.densityVectors[0].Count, 0f);    
-        /// 
-        /// Make cells consume oxygen
-       
-            
-
-        //Some temporary solver variables
-        //cellSourceAndSinkSolverTemp1.Resize(microenvironment.densityVectors[0].Count, 0f);
-        //cellSourceAndSinkSolverTemp2.Resize(microenvironment.densityVectors[0].Count, 1f);
 
     }
 
@@ -194,11 +142,7 @@ public class CellBehavior : MonoBehaviour {
             microenvironment.densityVectors[currentVoxelIndex][i] = (microenvironment.densityVectors[currentVoxelIndex][i] + secretionRates[i] * saturationDensities[i] * dt) / (1f + (secretionRates[i] + uptakeRates[i]) * dt);
         }
 
-        //FUNDA
-        //for (int i = 0; i < microenvironment.densityVectors[currentVoxelIndex].Count; i++){
-        //    microenvironment.densityVectors[currentVoxelIndex][i] += cellSourceAndSinkSolverTemp1[i];    
-        //    microenvironment.densityVectors[currentVoxelIndex][i] /= cellSourceAndSinkSolverTemp2[i];        
-        //}
+
     }
 
    
@@ -338,13 +282,37 @@ public class CellBehavior : MonoBehaviour {
     }
 
 
-    //private void OnDrawGizmos() {
+    private void OnDrawGizmosSelected() {
 
 
-    //    Gizmos.color = Color.magenta;
-    //    Gizmos.DrawLine(transform.position, transform.position + randDirection* 5);
+        if (Application.isPlaying && Globals.animationRunning) {
 
 
-    //}
+            //Find the cell's voxel and print its information
+            Microenvironment microenvironment = GameObject.FindWithTag("Microenvironment").GetComponent<MicroenvironmentBehavior>().microenvironment;
 
-}
+            Voxel voxel = microenvironment.GetVoxel(currentVoxelIndex);
+            float voxelSize = Mathf.Pow(voxel.volume, 0.333333f);
+
+
+            //Oxygen density for current voxel
+
+            Debug.Log(microenvironment.densityVectors[currentVoxelIndex][0]);
+            float c = microenvironment.densityVectors[currentVoxelIndex][0] / 38f; /// max 38f; 
+            Gizmos.color = Color.Lerp(Color.green, Color.white, c);
+            Gizmos.color = new Vector4(Gizmos.color.r, Gizmos.color.g, Gizmos.color.b, 0.5f); //make it transparent
+
+            Gizmos.DrawCube(voxel.center, new Vector3(voxelSize, voxelSize, voxelSize));
+
+            //Gizmos.color = Color.blue;
+            //Gizmos.DrawWireCube(voxel.center, new Vector3(voxelSize, voxelSize, voxelSize));
+
+
+        }
+
+
+    }
+
+    }
+
+

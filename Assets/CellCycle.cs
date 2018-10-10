@@ -234,7 +234,6 @@ public class NecrosisModel : CellCycle {
 
         float transitionRateNecrosis1 = 1f/(24f * 60f * Globals.timeConst);// 60 days max
 
-
         AddPhase(new PhaseT(0, Globals.G0, 1, Color.red)); //could be any state
 
         AddPhase(new PhaseT(1, Globals.NS, 2, new Color(0.5f,0.5f,0.5f)));
@@ -244,7 +243,6 @@ public class NecrosisModel : CellCycle {
         AddTransitionRate(Globals.G0, Globals.NS, -1, false); //not fixed rate, depends on the current conditions
         AddTransitionRate(Globals.NS, Globals.NL, transitionRateNecrosis0, false);
         AddTransitionRate(Globals.NL, Globals.D,  transitionRateNecrosis1, true);
-
     }
 
     public override void EnterPhase(int phaseInd) {
